@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "spotify_data",
-    "accounts.apps.AccountsConfig"
+    "accounts.apps.AccountsConfig",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+]
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',  # The default port for create-react-app
+    'http://localhost:8000',   #the django addr, not sure which one yet so I included both
 ]
 
 ROOT_URLCONF = "spotify_wrapper.urls"
