@@ -1,5 +1,5 @@
 # spotify-wrapper
-Gatech CS 2340 project 2
+Gatech CS 2340 project two
 
 Base User Story #1: As a user, I want to be able to view a presentation of the different aspects of my personal Spotify music listening tastes displayed in colorful and fun ways. 
 
