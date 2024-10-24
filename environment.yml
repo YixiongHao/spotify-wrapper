@@ -45,5 +45,5 @@ dependencies:
   - urllib3==2.2.2
   - wrapt==1.14.1
   - pytest-django==4.9.0
-  - pytest-mock==3.10.0 
+  - pytest-mock==3.10.0
   - django-cors-headers==4.5.0
