@@ -3,11 +3,9 @@ This module contains views for interacting with Spotify API data.
 It includes retrieving and storing user's top artists and tracks.
 """
 
-from django.shortcuts import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.models import User
 import requests
 
 from .models import SpotifyUser
@@ -50,7 +48,7 @@ class TopArtistsView(APIView):
                 spotify_user.favorite_artists_short = top_artists
             elif time_range == 'medium_term':
                 spotify_user.favorite_artists_medium = top_artists
-            else:  # long_term
+            else:
                 spotify_user.favorite_artists_long = top_artists
 
             spotify_user.save()
@@ -98,7 +96,7 @@ class TopTracksView(APIView):
                 spotify_user.favorite_tracks_short = top_tracks
             elif time_range == 'medium_term':
                 spotify_user.favorite_tracks_medium = top_tracks
-            else:  # long_term
+            else:
                 spotify_user.favorite_tracks_long = top_tracks
 
             spotify_user.save()
