@@ -1,10 +1,16 @@
+"""
+This module contains views for interacting with Spotify API data.
+It includes retrieving and storing user's top artists and tracks.
+"""
+
 from django.shortcuts import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import SpotifyUser
 import requests
+
+from .models import SpotifyUser
 from .utils import get_user_tokens, get_spotify_top_data
 
 
@@ -21,7 +27,7 @@ class TopArtistsView(APIView):
         Handles GET request to fetch and store the user's top artists.
 
         Retrieves the user's top artists from Spotify for the specified time range
-        (short, medium, or long) and stores the result in the SpotifyUser model.
+        (short_term, medium_term, long_term) and stores the result in the SpotifyUser model.
 
         Parameters:
             request (HttpRequest): The HTTP request object.
@@ -69,7 +75,7 @@ class TopTracksView(APIView):
         Handles GET request to fetch and store the user's top tracks.
 
         Retrieves the user's top tracks from Spotify for the specified time range
-        (short, medium, or long) and stores the result in the SpotifyUser model.
+        (short_term, medium_term, long_term) and stores the result in the SpotifyUser model.
 
         Parameters:
             request (HttpRequest): The HTTP request object.
@@ -102,4 +108,3 @@ class TopTracksView(APIView):
             return Response({'error': 'Spotify user not found.'}, status=status.HTTP_404_NOT_FOUND)
         except requests.exceptions.RequestException as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
