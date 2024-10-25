@@ -1,3 +1,7 @@
-from django.contrib import admin
+"""
+This module handles admin
+"""
+
+#from django.contrib import admin
 
 # Register your models here.
