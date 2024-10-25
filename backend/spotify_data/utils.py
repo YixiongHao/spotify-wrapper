@@ -1,3 +1,8 @@
+"""
+This module contains utility functions for interacting with the Spotify API.
+It includes functions to retrieve user tokens and fetch top data (artists or tracks).
+"""
+
 import requests
 
 
@@ -11,8 +16,7 @@ def get_user_tokens(session_key):
     Returns:
         dict: A dictionary containing the user's access tokens if found, None otherwise.
     """
-    # This should retrieve user tokens from the database or session storage
-    # For example, you might have a function to query the database for tokens
+    # Placeholder: Replace with actual token retrieval logic from the database or session storage
     return {
         'access_token': 'user_access_token',  # Replace with actual token retrieval logic
         'refresh_token': 'user_refresh_token'
@@ -38,7 +42,9 @@ def get_spotify_top_data(access_token, data_type, time_range='short_term'):
     headers = {
         'Authorization': f'Bearer {access_token}'
     }
-    response = requests.get(url, headers=headers)
+
+    # Added a timeout to the request to avoid indefinite hanging
+    response = requests.get(url, headers=headers, timeout=10)
 
     if response.status_code != 200:
         response.raise_for_status()
