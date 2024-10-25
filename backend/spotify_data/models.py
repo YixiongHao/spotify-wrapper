@@ -3,6 +3,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Song(models.Model): #toy model, testing out rest framework
+    """
+        Toy model for testing out the Django REST framework.
+
+        Parameters:
+        - title: the title of the song
+        - runTime: the runtime of the song in seconds
+        """
     title = models.CharField(max_length=100)
     runTime = models.IntegerField()
 
@@ -38,3 +45,4 @@ class SpotifyUser(models.Model):
     favorite_artists_short = models.JSONField(blank=True, null=True)
     favorite_artists_medium = models.JSONField(blank=True, null=True)
     favorite_artists_long = models.JSONField(blank=True, null=True)
+
