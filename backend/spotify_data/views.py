@@ -9,8 +9,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from requests import get
-from accounts.models import SpotifyUser
-from accounts.utils import get_user_tokens, is_spotify_authenticated
+from ..accounts.models import SpotifyUser
+from ..accounts.utils import get_user_tokens, is_spotify_authenticated
 
 
 # Helper function to make Spotify API requests
@@ -59,27 +59,42 @@ class SpotifyDataView(APIView):
         # Check if the user is authenticated with Spotify
         user = request.user
         if not is_spotify_authenticated(request.session.session_key):
-            return Response({'error': 'User is not authenticated with Spotify'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'User is not authenticated with Spotify'},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
         # Retrieve the user's Spotify tokens
         tokens = get_user_tokens(request.session.session_key)
         if not tokens:
-            return Response({'error': 'Could not retrieve Spotify tokens'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Could not retrieve Spotify tokens'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         access_token = tokens.access_token
 
         # Spotify API URLs for top tracks and artists over different time periods
         api_urls = {
-            'favorite_tracks_short': 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=20',
-            'favorite_tracks_medium': 'https://api.spotify.com/v1/me/top/tracks?time_range=medium_term&limit=20',
-            'favorite_tracks_long': 'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=20',
-            'favorite_artists_short': 'https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=20',
-            'favorite_artists_medium': 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=20',
-            'favorite_artists_long': 'https://api.spotify.com/v1/me/top/artists?time_range=long_term&limit=20'
+            'favorite_tracks_short': (
+                'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=20'
+            ),
+            'favorite_tracks_medium': (
+                'https://api.spotify.com/v1/me/top/tracks?time_range=medium_term&limit=20'
+            ),
+            'favorite_tracks_long': (
+                'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=20'
+            ),
+            'favorite_artists_short': (
+                'https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=20'
+            ),
+            'favorite_artists_medium': (
+                'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=20'
+            ),
+            'favorite_artists_long': (
+                'https://api.spotify.com/v1/me/top/artists?time_range=long_term&limit=20'
+            )
         }
 
         # Fetch top tracks and artists from Spotify API
-        spotify_data = {key: make_spotify_api_request(url, access_token) for key, url in api_urls.items()}
+        spotify_data = {key: make_spotify_api_request(url, access_token)
+                        for key, url in api_urls.items()}
 
         # Update or create the SpotifyUser record for the current user
         spotify_user, _ = SpotifyUser.objects.get_or_create(user=user)

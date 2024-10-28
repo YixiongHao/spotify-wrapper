@@ -1,6 +1,8 @@
+"""
+This module handles the configuration of the spotify_data app.
+"""
 from django.apps import AppConfig
 
-
 class SpotifyDataConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "spotify_data"
+    """Configuration class for the spotify_data app."""
+    name = 'spotify_data'
