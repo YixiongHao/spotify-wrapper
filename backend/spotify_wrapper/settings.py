@@ -63,7 +63,15 @@ CSRF_TRUSTED_ORIGINS = [
     'https://spotify-wrapped-backend.vercel.app',
 ]
 
-CORS_ALLOW_METHODS = ["*"]
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+
 CORS_ALLOW_HEADERS = [
     'Content-Type',
     'Authorization',
