@@ -72,7 +72,6 @@ const SignupForm: React.FC = () => {
                     password2: formData.password2,
                 }),
                 credentials: 'include',
-                mode: 'cors'
             });
 
             if (response.ok) {

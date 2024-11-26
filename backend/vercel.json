@@ -18,7 +18,7 @@
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Origin": "https://spotify-wrapped-frontend.vercel.app",
         "Access-Control-Allow-Methods": "GET,DELETE,PATCH,POST,PUT,OPTIONS",
-        "Access-Control-Allow-Headers": "X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Origin"
+        "Access-Control-Allow-Headers": "X-CSRF-Token,X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Origin"
       },
       "status": 200,
       "continue": true
@@ -29,7 +29,7 @@
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Origin": "https://spotify-wrapped-frontend.vercel.app",
         "Access-Control-Allow-Methods": "GET,DELETE,PATCH,POST,PUT,OPTIONS",
-        "Access-Control-Allow-Headers": "X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Origin"
+        "Access-Control-Allow-Headers": "X-CSRF-Token,X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Origin"
       },
       "dest": "spotify_wrapper/wsgi.py"
     }
