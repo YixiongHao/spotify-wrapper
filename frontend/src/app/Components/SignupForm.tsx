@@ -54,6 +54,7 @@ const SignupForm: React.FC = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const csrfToken = getCookie('csrftoken');
+        logInfo('CSRF Token:', csrfToken);
 
         try {
             //const response = await fetch('http://localhost:8000/spotify/register/', {
