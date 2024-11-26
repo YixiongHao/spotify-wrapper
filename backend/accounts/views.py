@@ -257,24 +257,27 @@ def sign_up(request):
     Returns:
         JsonResponse: JSON response with success or error messages.
     """
+    if request.method == 'OPTIONS':
+        response = JsonResponse({}, status=200)
+        return response
 
-    #if request.method == 'POST':
-    form = RegisterForm(request.POST)
-    username = form.data.get('username')
-    password = form.data.get('password1')
-    if not 6 <= len(username) <= 26:
-        form.add_error('username', 'Username must be between 6 and 26 characters')
-    if not password or password.isspace():
-        form.add_error('password1', 'Password cannot be only empty characters')
-    if not 8 <= len(password) <= 26:
-        form.add_error('password1', 'Password must be between 8 and 26 characters')
-    if form.is_valid():
-        user = form.save(commit=False)
-        user.username = user.username.lower()
-        user.save()
-        login(request, user)
-        return JsonResponse({'message': 'sign-up sucessful'}, status=200)
-    return JsonResponse({'errors': form.errors}, status=400)
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        username = form.data.get('username')
+        password = form.data.get('password1')
+        if not 6 <= len(username) <= 26:
+            form.add_error('username', 'Username must be between 6 and 26 characters')
+        if not password or password.isspace():
+            form.add_error('password1', 'Password cannot be only empty characters')
+        if not 8 <= len(password) <= 26:
+            form.add_error('password1', 'Password must be between 8 and 26 characters')
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return JsonResponse({'message': 'sign-up sucessful'}, status=200)
+        return JsonResponse({'errors': form.errors}, status=400)
 
 def get_username(request):
     '''Gets the username of the user for frontend'''

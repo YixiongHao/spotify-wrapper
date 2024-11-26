@@ -55,16 +55,12 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # The default port for next.js apps
     'https://spotify-wrapped-frontend.vercel.app', #vercel
     'https://spotify-wrapped-backend.vercel.app',
-    'spotify-wrapped-frontend-cxk9kgbgg-yixionghaos-projects.vercel.app',
-    'spotify-wrapped-backend-325uluc88-yixionghaos-projects.vercel.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'https://spotify-wrapped-frontend.vercel.app', #vercel
     'https://spotify-wrapped-backend.vercel.app',
-    'spotify-wrapped-frontend-cxk9kgbgg-yixionghaos-projects.vercel.app',
-    'spotify-wrapped-backend-325uluc88-yixionghaos-projects.vercel.app',
 ]
 
 CORS_ALLOW_METHODS = [
@@ -87,6 +83,7 @@ CORS_ALLOW_HEADERS = [
 
 CORS_ALLOW_ALL_ORIGINS = False #change this to false when we deploy
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
@@ -102,8 +99,6 @@ ALLOWED_HOSTS = [
     "localhost",
     "spotify-wrapped-backend.vercel.app",
     '.vercel.app',
-    'spotify-wrapped-frontend-cxk9kgbgg-yixionghaos-projects.vercel.app',
-    'spotify-wrapped-backend-325uluc88-yixionghaos-projects.vercel.app',
 ]
 
 TEMPLATES = [
