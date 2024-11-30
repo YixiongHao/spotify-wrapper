@@ -75,12 +75,15 @@ CORS_ALLOW_METHODS = [
 ]
 
 CORS_ALLOW_HEADERS = [
-    'Content-Type',
-    'Authorization',
-    'X-CSRFToken',
-    'X-Requested-With',
-    'Accept',
-    'Origin',
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False #change this to false when we deploy

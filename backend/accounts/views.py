@@ -270,15 +270,7 @@ def sign_up(request):
         return response
 
     if request.method == 'POST':
-        logger.info(f"POST data: {request.POST}")
-        logger.info(f"Content-Type: {request.content_type}")
-        
         form = RegisterForm(request.POST)
-        logger.info(f"Form data: {form.data}")
-        logger.info(f"Form is valid: {form.is_valid()}")
-        if not form.is_valid():
-            logger.error(f"Form errors: {form.errors}")
-        
         username = form.data.get('username')
         password = form.data.get('password1')
         if not 6 <= len(username) <= 26:
