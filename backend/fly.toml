@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for wrapped-backend on 2024-11-26T14:20:46-05:00
+# fly.toml app configuration file generated for wrapped-backend on 2024-11-29T20:43:44-05:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'wrapped-backend'
-primary_region = 'iad'
+primary_region = 'atl'
 console_command = '/code/manage.py shell'
 
 [build]

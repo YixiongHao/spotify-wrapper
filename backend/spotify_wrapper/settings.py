@@ -55,12 +55,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # The default port for next.js apps
     'https://spotify-wrapped-frontend.vercel.app', #vercel
     'https://spotify-wrapped-backend.vercel.app',
+    'https://wrapped-backend.fly.dev',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'https://spotify-wrapped-frontend.vercel.app', #vercel
     'https://spotify-wrapped-backend.vercel.app',
+    'https://wrapped-backend.fly.dev',
 ]
 
 CORS_ALLOW_METHODS = [
@@ -99,6 +101,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "spotify-wrapped-backend.vercel.app",
     '.vercel.app',
+    'wrapped-backend.fly.dev',
 ]
 
 TEMPLATES = [

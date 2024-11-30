@@ -29,11 +29,11 @@ const SignupForm: React.FC = () => {
 
     useEffect(() => {
         //fetch('http://localhost:8000/spotify/get-csrf-token/', {
-        fetch('https://spotify-wrapped-backend.vercel.app/spotify/get-csrf-token/', {
+        fetch('https://wrapped-backend.fly.dev/spotify/get-csrf-token/', {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
-                'Origin': 'https://spotify-wrapped-frontend.vercel.app'
+                'Origin': 'https://wrapped-backend.fly.dev'
             },
         })
         .then((response) => {
@@ -58,13 +58,13 @@ const SignupForm: React.FC = () => {
 
         try {
             //const response = await fetch('http://localhost:8000/spotify/register/', {
-            const response = await fetch('https://spotify-wrapped-backend.vercel.app/spotify/register/', {
+            const response = await fetch('https://wrapped-backend.fly.dev/spotify/register/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': csrfToken || '',
                     'Accept': 'application/json',
-                    'Origin': 'https://spotify-wrapped-frontend.vercel.app'
+                    'Origin': 'https://wrapped-backend.fly.dev'
                 },
                 body: new URLSearchParams({
                     username: formData.username,
