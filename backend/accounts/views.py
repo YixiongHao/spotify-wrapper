@@ -17,6 +17,7 @@ Functions:
     - sign_up: Registers a new user, validates username and password criteria, and logs them in.
 """
 import os
+import logging
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse, redirect, render
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
@@ -32,6 +33,8 @@ from requests import Request, post
 from .utils import update_or_create_user_tokens, is_spotify_authenticated, generate_state, delete_user_data
 
 from .forms import LoginForm, RegisterForm
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -257,12 +260,25 @@ def sign_up(request):
     Returns:
         JsonResponse: JSON response with success or error messages.
     """
+
+    logger.info(f"Received {request.method} request to sign_up")
+    logger.info(f"Request headers: {dict(request.headers)}")
+
+
     if request.method == 'OPTIONS':
         response = JsonResponse({}, status=200)
         return response
 
     if request.method == 'POST':
+        logger.info(f"POST data: {request.POST}")
+        logger.info(f"Content-Type: {request.content_type}")
+        
         form = RegisterForm(request.POST)
+        logger.info(f"Form data: {form.data}")
+        logger.info(f"Form is valid: {form.is_valid()}")
+        if not form.is_valid():
+            logger.error(f"Form errors: {form.errors}")
+        
         username = form.data.get('username')
         password = form.data.get('password1')
         if not 6 <= len(username) <= 26:

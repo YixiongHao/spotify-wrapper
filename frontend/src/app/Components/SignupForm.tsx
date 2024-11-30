@@ -54,7 +54,6 @@ const SignupForm: React.FC = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const csrfToken = getCookie('csrftoken');
-        logInfo('CSRF Token:', csrfToken);
 
         try {
             //const response = await fetch('http://localhost:8000/spotify/register/', {
@@ -75,33 +74,60 @@ const SignupForm: React.FC = () => {
                 credentials: 'include',
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                logInfo('Sign-Up Successful:', data);
-                setErrorMessage(null);
-                router.push('dashboard/');
-            } else if (response.status === 400) {
-                const errorData = await response.json();
-                logError('Unexpected 400 Error:', errorData);
-
-                if (errorData.errors) {
-                    const errorMessages = typeof errorData.errors === 'string'
-                        ? errorData.errors
-                        : Object.values(errorData.errors)
-                            .flat() 
-                            .join(' ');
             
-                    setErrorMessage(errorMessages);
+            // Log the full response details
+            logInfo('Response status:', response.status);
+            const responseText = await response.text();
+            logInfo('Raw response:', responseText);
+
+            try {
+                const data = JSON.parse(responseText);
+                
+                if (response.ok) {
+                    logInfo('Sign-Up Successful:', data);
+                    setErrorMessage(null);
+                    router.push('dashboard/');
                 } else {
-                    setErrorMessage('Unexpected Error. Try Again');
+                    // Log the full error response
+                    logError('Server Error Response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        data: data,
+                        errors: data.errors
+                    });
+
+                    if (data.errors) {
+                        const errorMessages = typeof data.errors === 'string'
+                            ? data.errors
+                            : Object.values(data.errors)
+                                .flat()
+                                .join(' ');
+                        setErrorMessage(errorMessages);
+                    } else {
+                        setErrorMessage('Unexpected Error. Try Again');
+                    }
                 }
-            } else {
-                const errorData = await response.json();
-                setErrorMessage(errorData.error || 'An error occured. Please try again.');
+            } catch (parseError) {
+                logError('Error parsing JSON response:', {
+                    parseError,
+                    rawResponse: responseText
+                });
+                setErrorMessage('Error parsing server response');
             }
         } catch (error) {
-            logError('Unexpected Error:', error);
-            setErrorMessage('An Unexpected Error Occured. Please try again.')
+            logError('Network/Fetch Error:', {
+                error,
+                requestData: {
+                    url: 'https://wrapped-backend.fly.dev/spotify/register/',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json',
+                        'Origin': 'https://wrapped-backend.fly.dev'
+                    },
+                }
+            });
+            setErrorMessage('An Unexpected Error Occurred. Please try again.');
         }
     };
 
