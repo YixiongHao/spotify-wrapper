@@ -10,7 +10,7 @@ export default function History() {
 
     async function fetchSummary(): Promise<void> {
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/displayhistory`, {
+            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/spotify_data/displayhistory`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

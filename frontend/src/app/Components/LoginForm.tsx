@@ -25,7 +25,7 @@ const LoginForm: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('http://localhost:8000/spotify/get-csrf-token/', {
+    fetch('https://spotify-wrapped-backend.vercel.app/get-csrf-token/', {
       credentials: 'include',
     })
         .then((response) => {
@@ -52,7 +52,7 @@ const LoginForm: React.FC = () => {
     const csrfToken = getCookie('csrftoken');
 
     try {
-      const response = await fetch('http://localhost:8000/spotify/login/', {
+      const response = await fetch('https://spotify-wrapped-backend.vercel.app/spotify/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

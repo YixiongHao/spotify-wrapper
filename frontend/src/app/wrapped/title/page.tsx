@@ -30,7 +30,7 @@ const SpotifyUserPage = () => {
     const fetchAndDisplaySpotifyUser = async (): Promise<void> => {
         try {
             // Fetch user data
-            const response = await fetch(`http://localhost:8000/spotify_data/updateuser`, {
+            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/spotify_data/updateuser`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const SpotifyUserPage = () => {
             // Fetch Spotify Wrapped data
             const termselection = localStorage.getItem("timeRange") || "1";
             const wrappedResponse = await fetch(
-                `http://localhost:8000/spotify_data/addwrapped/?termselection=${encodeURIComponent(termselection)}`,
+                `https://spotify-wrapped-backend.vercel.app/spotify_data/addwrapped/?termselection=${encodeURIComponent(termselection)}`,
                 {
                     method: "GET",
                     headers: {

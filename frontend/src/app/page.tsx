@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
   const checkAuthentication = async () => {
     try {
-      const response = await fetch('http://localhost:8000/spotify/is-authenticated/', {
+      const response = await fetch('https://spotify-wrapped-backend.vercel.app/spotify/is-authenticated/', {
         credentials: 'include'
       });
       const data = await response.json();

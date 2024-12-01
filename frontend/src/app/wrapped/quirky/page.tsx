@@ -54,7 +54,7 @@ export default function Quirky() {
 
     async function fetchQuirkyDescription(id: string): Promise<void> {
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/displayquirky?id=${id}&isDuo=${isDuo}`, {
+            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/spotify_data/displayquirky?id=${id}&isDuo=${isDuo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

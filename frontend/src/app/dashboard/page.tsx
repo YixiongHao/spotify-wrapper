@@ -24,7 +24,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchUsername = async () => {
             try {
-                const response = await fetch("http://localhost:8000/spotify/get-username/", {
+                const response = await fetch("https://spotify-wrapped-backend.vercel.app/spotify/get-username/", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -56,12 +56,12 @@ export default function Dashboard() {
 
     // Check authentication
     useEffect(() => {
-        fetch("http://localhost:8000/spotify/is-authenticated/", { credentials: "include" })
+        fetch("https://spotify-wrapped-backend.vercel.app/spotify/is-authenticated/", { credentials: "include" })
             .then((response) => response.json())
             .then((data) => {
                 if (!data.status) {
                     logInfo("Not authenticated", data);
-                    window.location.href = "http://localhost:8000/spotify/get-auth-url/";
+                    window.location.href = "https://spotify-wrapped-backend.vercel.app/spotify/get-auth-url/";
                 } else {
                     setIsAuthenticated(true);
                 }
@@ -92,7 +92,7 @@ export default function Dashboard() {
 
     async function checkUsername(username: String) {
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/checkusername?username=${username}`, {
+            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/spotify_data/checkusername?username=${username}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ export default function Dashboard() {
     async function createDuoWrapped(user2: String) {
         try {
             const termselection = localStorage.getItem("timeRange") || "1";
-            const response = await fetch(`http://localhost:8000/spotify_data/addduo?user1=${username}&user2=${user2}&termselection=${termselection}`, {
+            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/addduo?user1=${username}&user2=${user2}&termselection=${termselection}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export default function Dashboard() {
         const csrfToken = getCookie('csrftoken');
     
         try {
-          const response = await fetch('http://localhost:8000/spotify/logout/', {
+          const response = await fetch('https://spotify-wrapped-backend.vercel.app/spotify/logout/', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -157,7 +157,7 @@ export default function Dashboard() {
     
       const handleDeleteAccount = async () => {
         try {
-            const response = await fetch ('http://localhost:8000/spotify/delete-account/', {
+            const response = await fetch ('https://spotify-wrapped-backend.vercel.app/spotify/delete-account/', {
                 credentials: 'include'
             });
     
