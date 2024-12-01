@@ -242,6 +242,9 @@ def sign_out(request):
     # messages.success(request, f'You are now logged out.')
     return JsonResponse({'message': 'Logged Out'}, status=200)
 
+import logging
+logger = logging.getLogger('accounts')
+
 @csrf_exempt
 def sign_up(request):
     """
@@ -258,23 +261,76 @@ def sign_up(request):
         JsonResponse: JSON response with success or error messages.
     """
 
+    logger.info("Received signup request")
+    logger.debug(f"Request Method: {request.method}")
+    logger.debug(f"Request Headers: {dict(request.headers)}")
+    
     if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        username = form.data.get('username')
-        password = form.data.get('password1')
-        if not 6 <= len(username) <= 26:
-            form.add_error('username', 'Username must be between 6 and 26 characters')
-        if not password or password.isspace():
-            form.add_error('password1', 'Password cannot be only empty characters')
-        if not 8 <= len(password) <= 26:
-            form.add_error('password1', 'Password must be between 8 and 26 characters')
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = user.username.lower()
-            user.save()
-            login(request, user)
-            return JsonResponse({'message': 'sign-up sucessful'}, status=200)
-        return JsonResponse({'errors': form.errors}, status=400)
+        try:
+            # Log raw request data
+            logger.debug(f"Raw POST data: {request.POST}")
+            logger.debug(f"Request body: {request.body.decode('utf-8')}")
+            
+            form = RegisterForm(request.POST)
+            username = form.data.get('username')
+            password = form.data.get('password1')
+            
+            # Log form data (excluding sensitive info)
+            logger.debug(f"Form data received - Username: {username}, Email: {form.data.get('email')}")
+            
+            # Validation checks with logging
+            if not 6 <= len(username) <= 26:
+                logger.warning(f"Invalid username length: {len(username)}")
+                form.add_error('username', 'Username must be between 6 and 26 characters')
+            if not password or password.isspace():
+                logger.warning("Empty or whitespace-only password")
+                form.add_error('password1', 'Password cannot be only empty characters')
+            if not 8 <= len(password) <= 26:
+                logger.warning(f"Invalid password length: {len(password)}")
+                form.add_error('password1', 'Password must be between 8 and 26 characters')
+            
+            logger.debug(f"Form is valid: {form.is_valid()}")
+            if not form.is_valid():
+                logger.error(f"Form validation errors: {form.errors}")
+                return JsonResponse({'errors': form.errors}, status=400)
+            
+            # Try to save the user
+            try:
+                user = form.save(commit=False)
+                user.username = user.username.lower()
+                user.save()
+                logger.info(f"Successfully created user: {user.username}")
+                
+                # Try to log in the user
+                try:
+                    login(request, user)
+                    logger.info(f"Successfully logged in user: {user.username}")
+                except Exception as login_error:
+                    logger.exception("Login failed after user creation")
+                    return JsonResponse({
+                        'error': 'User created but login failed',
+                        'details': str(login_error)
+                    }, status=500)
+                
+                return JsonResponse({'message': 'sign-up successful'}, status=200)
+                
+            except Exception as save_error:
+                logger.exception("Failed to save user")
+                return JsonResponse({
+                    'error': 'Failed to create user',
+                    'details': str(save_error)
+                }, status=500)
+                
+        except Exception as e:
+            logger.exception("Unexpected error in sign_up view")
+            return JsonResponse({
+                'error': 'Internal server error',
+                'details': str(e),
+                'trace': str(e.__traceback__)
+            }, status=500)
+    
+    logger.warning(f"Invalid request method: {request.method}")
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def get_username(request):
     '''Gets the username of the user for frontend'''

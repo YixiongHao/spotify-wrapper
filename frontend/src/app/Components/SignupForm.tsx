@@ -55,9 +55,14 @@ const SignupForm: React.FC = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const csrfToken = getCookie('csrftoken');
-
+    
         try {
-            //const response = await fetch('http://localhost:8000/spotify/register/', {
+            logInfo('Attempting signup with data:', {
+                username: formData.username,
+                email: formData.email,
+                // Don't log passwords
+            });
+    
             const response = await fetch('https://spotify-wrapped-backend.vercel.app/spotify/register/', {
                 method: 'POST',
                 headers: {
@@ -73,36 +78,38 @@ const SignupForm: React.FC = () => {
                     password2: formData.password2,
                 }),
                 credentials: 'include',
-                mode: 'cors'
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                logInfo('Sign-Up Successful:', data);
-                setErrorMessage(null);
-                router.push('dashboard/');
-            } else if (response.status === 400) {
-                const errorData = await response.json();
-                logError('Unexpected 400 Error:', errorData);
-
-                if (errorData.errors) {
-                    const errorMessages = typeof errorData.errors === 'string'
-                        ? errorData.errors
-                        : Object.values(errorData.errors)
-                            .flat() 
-                            .join(' ');
-            
-                    setErrorMessage(errorMessages);
+    
+            const responseText = await response.text();
+            logInfo('Raw response:', responseText);
+    
+            try {
+                const data = JSON.parse(responseText);
+                
+                if (response.ok) {
+                    logInfo('Sign-Up Successful:', data);
+                    setErrorMessage(null);
+                    router.push('dashboard/');
                 } else {
-                    setErrorMessage('Unexpected Error. Try Again');
+                    logError('Server Error:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        data: data,
+                        details: data.details,  // From our enhanced error response
+                        trace: data.trace       // From our enhanced error response
+                    });
+    
+                    setErrorMessage(data.error || 'An unexpected error occurred');
                 }
-            } else {
-                const errorData = await response.json();
-                setErrorMessage(errorData.error || 'An error occured. Please try again.');
+            } catch (parseError) {
+                logError('Error parsing response:', {
+                    parseError,
+                    rawResponse: responseText
+                });
             }
         } catch (error) {
-            logError('Unexpected Error:', error);
-            setErrorMessage('An Unexpected Error Occured. Please try again.')
+            logError('Network/Fetch Error:', error);
+            setErrorMessage('An unexpected error occurred. Please try again.');
         }
     };
 
