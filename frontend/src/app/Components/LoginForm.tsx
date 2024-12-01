@@ -25,7 +25,7 @@ const LoginForm: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('https://spotify-wrapped-backend.vercel.app/get-csrf-token/', {
+    fetch('https://spotify-wrapped-backend.vercel.app/spotify/get-csrf-token/', {
       credentials: 'include',
     })
         .then((response) => {
