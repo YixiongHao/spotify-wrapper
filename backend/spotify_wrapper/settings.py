@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import logging.config
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -165,15 +166,15 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+        'vercel': {
+            'format': '%(levelname)s: %(message)s',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'stream': sys.stdout,  # Important for Vercel
+            'formatter': 'vercel',
         },
     },
     'loggers': {
@@ -181,10 +182,14 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
         },
-        'accounts': {  # Add logger for your app
+        'accounts': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
+    },
+    'root': {  # Add root logger
+        'handlers': ['console'],
+        'level': 'INFO',
     },
 }
