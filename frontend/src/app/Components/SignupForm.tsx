@@ -30,7 +30,7 @@ const SignupForm: React.FC = () => {
 
     useEffect(() => {
         //fetch('http://localhost:8000/spotify/get-csrf-token/', {
-        fetch('https://spotify-wrapped-backend.vercel.app/spotify/get-csrf-token/', {
+        fetch('https://spotify-wrapped-backend-git-yix-new-yixionghaos-projects.vercel.app/spotify/get-csrf-token/', {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
@@ -58,7 +58,7 @@ const SignupForm: React.FC = () => {
 
         try {
             //const response = await fetch('http://localhost:8000/spotify/register/', {
-            const response = await fetch('https://spotify-wrapped-backend.vercel.app/spotify/register/', {
+            const response = await fetch('https://spotify-wrapped-backend-git-yix-new-yixionghaos-projects.vercel.app/spotify/register/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
