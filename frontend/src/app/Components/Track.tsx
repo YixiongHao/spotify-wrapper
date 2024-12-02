@@ -19,18 +19,22 @@ type TrackProps = {
  * @param props.rank the tracks's rank
  */
 function Track(props: TrackProps) {
-    const altText = props.name + "'s profile picture";
+    const altText = "Cover photo for " + props.name;
     return (
         <div className={"flex flex-col m-6 overflow-hidden w-2/5"}>
-            <div className={"flex flex-row items-center pb-5"}>
+            <div className={"flex flex-row mb-5 space-x-5"}>
+                <p className={"text-7xl text-nowrap mt-auto mb-auto"}>#{props.rank}</p>
                 <Image
                     src={props.img}
                     alt={altText}
-                    width={160}
-                    height={160}
-                    className={"mr-10 border-4 border-black"}
+                    width={120}
+                    height={120}
+                    className={"border-4 border-black"}
                 />
-                <h2 className={"text-7xl text-black lowercase text-nowrap"}>#{props.rank} {props.name} {props.artist}</h2>
+                <div className={"mt-auto mb-auto"}>
+                    <p className={"text-5xl normal-case"}>{props.name}</p>
+                    <p className={"text-2xl normal-case"}>{props.artist}</p>
+                </div>
             </div>
             <p className={"items-start"}>{props.desc}</p>
         </div>

@@ -1,6 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Heading2 from "@/app/Components/Heading2";
 
 export default function Quirky() {
     const [desc, setDesc] = useState<string>(""); // Assuming desc is a string
@@ -78,14 +80,16 @@ export default function Quirky() {
     }
 
     return (
-        <div className="flex flex-col items-center">
-            <h1 className="text-2xl font-bold mb-4">Your Quirky Feature</h1>
-            <p className="text-lg italic mb-4">{desc}</p>
-            <img
-                src="../../images/trashcan.png"
-                alt="trash graphic"
-                style={{ maxWidth: "20%", height: "auto", marginTop: "20px" }}
+        <div className="flex flex-col items-center space-y-5 mt-5">
+            <Heading2 text={"quirkiest artist"}/>
+            <Image
+                src="/images/trashcan.png"
+                alt={"A dumpster with garbage bags around it"}
+                width={window.screen.width / 5}
+                height={window.screen.height / 5}
+                className={""}
             />
+            <p className="w-3/4">{desc}</p>
         </div>
     );
 }

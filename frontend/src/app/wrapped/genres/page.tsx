@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Genres() {
     const [genres, setGenres] = useState<string[]>([]); // Assuming genres is a string array
@@ -78,14 +79,16 @@ export default function Genres() {
     }
 
     return (
-        <div className={"flex flex-row justify-center"}>
-            <p>{genres}</p>
-            <p>{desc}</p>
-            <img 
-                src="..\..\images\dumpster.png" 
-                alt="dumpster graphic" 
-                style={{ maxWidth: "20%", height: "auto", marginTop: "20px" }}
-                />
+        <div className={"flex flex-col justify-center items-center space-y-2 mt-10"}>
+            <p>top genres: {genres}</p>
+            <Image
+                src="/images/dumpster.png"
+                alt={"A dumpster with garbage bags around it"}
+                width={window.screen.width/3}
+                height={window.screen.height/3}
+                className={""}
+            />
+            <p className={"w-3/4"}>{desc}</p>
         </div>
     );
 }

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 
 const SpotifyUserPage = () => {
-    const containerRef = useRef<HTMLDivElement | null>(null);
-
     useEffect(() => {
         // Navigate to the artists page on document click
         const handleClick = () => {
@@ -71,14 +70,16 @@ const SpotifyUserPage = () => {
     };
 
     return (
-        <div id="spotifyUserContainer" ref={containerRef}>
+        <div className={"relative flex flex-col items-center justify-center space-y-6 mt-auto mb-auto min-h-screen"}>
             {/* This is where the content will be appended */}
-            <h1>let's see what we are working with...</h1>
-            <p>Click anywhere on the screen to progress to the next slide</p>
-            <img
-                src="..\..\images\fire graphics.png"
-                alt="fire graphic"
-                style={{ maxWidth: "100%", height: "auto", marginTop: "20px" }}
+            <h1 className={"absolute top-96"}>turning up the heat...</h1>
+            <p className={"text-orange-300 absolute bottom-1/3"}>Click anywhere on the screen to progress to the next slide</p>
+            <Image
+                src="/images/fire graphics.png"
+                alt={"Flames"}
+                width={window.screen.width}
+                height={window.screen.height}
+                className={""}
             />
         </div>
     );

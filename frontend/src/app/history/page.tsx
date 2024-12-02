@@ -78,10 +78,9 @@ export default function History() {
     };
 
     return (
-        <>
+        <div className={"flex flex-col justify-center items-center space-y-10 mt-10"}>
             <Heading1 text="Past Roasts" />
-            <p>Roast history information</p>
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4 w-3/4">
                 {history.map((item, index) => (
                     <button
                         key={index}
@@ -114,6 +113,6 @@ export default function History() {
                     {popupMessage}
                 </div>
             )}
-        </>
+        </div>
     );
 }

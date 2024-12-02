@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
 import SummaryComponent from "@/app/Components/Summary";
+import Loading from "@/app/Components/Loading";
 
 // Define the type for the summary data
 type SummaryData = {
@@ -85,7 +86,7 @@ export default function Summary() {
                     genres={desc.genres}
                 />
             ) : (
-                <p>Loading summary...</p>
+                <Loading text = "summary"/>
             )}
         </div>
     );

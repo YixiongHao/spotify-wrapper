@@ -283,18 +283,49 @@ def str_to_datetime(dtstr):
     Convert string to datetime object.
     """
     strlist = dtstr.split("-")
-    y = int(strlist[0])
-    m = int(strlist[1])
-    d = int(strlist[2])
-    H = int(strlist[3])
-    M = int(strlist[4])
-    S = int(strlist[5])
-    f = int(strlist[6])
-    return datetime(y, m, d, H, M, S, f)
+    return datetime(strlist[0], strlist[1], strlist[2], strlist[3],
+                    strlist[4], strlist[5], strlist[6])
 
-def interlock(arr1, arr2):
+def create_groq_comparison(groq_api_key, artist_1, artist_2):
     """
-    zip two arrays together. Try to assume arr1 has length 3.
+    Create a humorous and roasty comparison between two favorite artists.
+
+    Args:
+        - groq_api_key: API key for Groq
+        - artist_1: Dictionary containing the first artist's name and additional info
+        - artist_2: Dictionary containing the second artist's name and additional info
+
+    Returns:
+        - llama_description: A funny roasty description of the comparison between the two artists
     """
-    combined = [item for pair in zip(arr1, arr2) for item in pair]
-    return combined + [arr1[2]] if len(arr1) > 2 else combined
+    if not groq_api_key:
+        raise GroqError("GROQ_API_KEY environment variable is not set.")
+
+    client = Groq(api_key=groq_api_key)
+    description_prompt = (
+        f"Compare {artist_1} and {artist_2} in a funny and way that roasts both. "
+        "Highlight their differences in style, fanbase, and anything else that makes them opposites."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a music critic who roasts and humorously compares two artists "
+                               "(use 2nd perspective) in less than 100 words. Be witty and sarcastic."
+                },
+                {
+                    "role": "user",
+                    "content": description_prompt
+                }
+            ],
+            model="llama3-8b-8192",
+        )
+
+        llama_description = response.choices[0].message.content
+    except KeyError as e:
+        llama_description = f"Key error: {str(e)}"
+    except Exception as e:
+        llama_description = f"Comparison unavailable due to API error: {str(e)}"  # pylint: disable=broad-exception-caught
+    return llama_description

@@ -8,13 +8,12 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse
 from django.utils import timezone
-from django.test import TestCase, Client
-from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
-from backend.spotify_data.utils import datetime_to_str
 from accounts.models import SpotifyToken
 from spotify_data.views import update_or_add_spotify_user, add_spotify_wrapped, add_duo_wrapped
 from spotify_data.models import SpotifyUser, SpotifyWrapped
+
+from backend.spotify_data.views import display_artists, display_songs, display_genres
 
 
 def mock_getenv_side_effect(key):
@@ -483,314 +482,6 @@ def test_add_spotify_wrapped_invalid_term(mock_create_wrapped,
     mock_spotify_user.save.assert_not_called()
 
 
-
-# @patch('spotify_data.views.DuoWrappedSerializer')  # Mock the serializer
-# @patch('spotify_data.views.SpotifyUser.objects.get')  # Mock SpotifyUser retrieval
-# @patch('spotify_data.views.SpotifyToken.objects.get')  # Mock SpotifyToken retrieval
-# @patch('spotify_data.views.create_groq_description')  # Mock description generator
-# @patch('spotify_data.views.get_spotify_recommendations')  # Mock recommendations generator
-# @patch('spotify_data.views.DuoWrapped.objects.create')  # Mock object creation
-# def test_add_duo_wrapped_short_term(mock_create_duo, mock_get_recommendations,
-#                                     mock_create_description, mock_get_token,
-#                                     mock_get_user, mock_serializer):
-#     """
-#     Test successful creation of short-term DuoWrapped
-#     """
-
-#     # Define a mock datetime
-#     mock_datetime_created = datetime(2024, 11, 29, 12, 0, 0, 123456)
-#     formatted_datetime = mock_datetime_created.strftime("%Y-%m-%d-%H-%M-%S-%f")
-
-#     # Mock request and user
-#     mock_request = MagicMock()
-
-#     mock_request.GET.get.side_effect = lambda key: {
-#         'termselection': '0',
-#         'user2': 'test_user2',
-#     }.get(key, None)
-
-#     assert mock_request.GET.get('termselection') == '0'
-#     assert mock_request.GET.get('user2') == 'test_user2'
-#     assert mock_request.GET.get('unknown_key') is None
-
-#     mock_request.user = Mock(username="test_user")
-#     mock_spotify_user = Mock(
-#         display_name="test_user",
-#         favorite_artists_short=["artist1", "artist2"],
-#         favorite_tracks_short=["track1", "track2"],
-#         favorite_genres_short=["genre1", "genre2"],
-#         quirkiest_artists_short=["quirky_artist1"],
-#         past_roasts=[]
-#     )
-#     mock_spotify_user2 = Mock(
-#         display_name="test_user2",
-#         favorite_artists_short=["artistA", "artistB"],
-#         favorite_tracks_short=["trackA", "trackB"],
-#         favorite_genres_short=["genreA", "genreB"],
-#         quirkiest_artists_short=["quirky_artistA"],
-#         past_roasts=[]
-#     )
-#     mock_get_user.side_effect = [mock_spotify_user, mock_spotify_user2]
-
-#     # Mock token with access_token as a string
-#     mock_get_token.return_value = Mock(access_token="mock_access_token")
-
-#     # Mock description and recommendations
-#     mock_create_description.return_value = "Generated description"
-#     mock_get_recommendations.return_value = ["placeholder1", "placeholder2", "placeholder3"]
-
-#     # Mock DuoWrapped creation with datetime_created
-#     mock_created_duo = Mock(
-#         user1="test_user",
-#         user2="test_user2",
-#         favorite_artists=["artist1", "artist2", "artistA", "artistB"],
-#         favorite_tracks=["track1", "track2", "trackA", "trackB"],
-#         favorite_genres=["genre1", "genre2", "genreA", "genreB"],
-#         quirkiest_artists=["quirky_artist1", "quirky_artistA"],
-#         llama_description="Generated description",
-#         llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#         datetime_created=formatted_datetime,  # Raw datetime for mock object
-#     )
-#     mock_create_duo.return_value = mock_created_duo
-
-#     # Mock serializer output including formatted datetime_created
-#     mock_serializer.return_value.data = {
-#         'user1': "test_user",
-#         'user2': "test_user2",
-#         'favorite_artists': ["artist1", "artist2", "artistA", "artistB"],
-#         'favorite_tracks': ["track1", "track2", "trackA", "trackB"],
-#         'favorite_genres': ["genre1", "genre2", "genreA", "genreB"],
-#         'quirkiest_artists': ["quirky_artist1", "quirky_artistA"],
-#         'llama_description': "Generated description",
-#         'llama_songrecs': ["placeholder1", "placeholder2", "placeholder3"],
-#         'datetime_created': formatted_datetime,  # Ensure formatted string
-#     }
-
-#     # Call the function
-#     response = add_duo_wrapped(mock_request)
-
-#     # Assertions
-#     assert isinstance(response, JsonResponse)
-#     assert response.status_code == 200
-
-#     # Verify creation call
-#     mock_create_duo.assert_called_once_with(
-#         user1="test_user",
-#         user2="test_user2",
-#         favorite_artists=["artist1", "artist2", "artistA", "artistB"],
-#         favorite_tracks=["track1", "track2", "trackA", "trackB"],
-#         favorite_genres=["genre1", "genre2", "genreA", "genreB"],
-#         quirkiest_artists=["quirky_artist1", "quirky_artistA"],
-#         llama_description="Generated description",
-#         llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#     )
-
-#     # Ensure both users' past roasts were updated
-#     mock_spotify_user.save.assert_called_once_with(update_fields=['past_roasts'])
-#     mock_spotify_user2.save.assert_called_once_with(update_fields=['past_roasts'])
-
-#     # Verify response contains serialized data including formatted datetime_created
-#     response_data = json.loads(response.content)
-#     assert 'duo_wrapped' in response_data
-#     assert response_data['duo_wrapped'] == mock_serializer.return_value.data
-
-
-# @patch('spotify_data.views.DuoWrappedSerializer')  # Mock the serializer
-# @patch('spotify_data.views.SpotifyUser.objects.get')  # Mock SpotifyUser retrieval
-# @patch('spotify_data.views.SpotifyToken.objects.get')  # Mock SpotifyToken retrieval
-# @patch('spotify_data.views.create_groq_description')  # Mock description generator
-# @patch('spotify_data.views.get_spotify_recommendations')  # Mock recommendations generator
-# @patch('spotify_data.views.DuoWrapped.objects.create')  # Mock object creation
-# def test_add_duo_wrapped_medium_term(mock_create_duo, mock_get_recommendations,
-#                                     mock_create_description, mock_get_token,
-#                                     mock_get_user, mock_serializer):
-#     """
-#     Test successful creation of short-term DuoWrapped
-#     """
-
-#     # Define a mock datetime
-#     mock_datetime_created = datetime(2024, 11, 29, 12, 0, 0, 123456)
-#     formatted_datetime = mock_datetime_created.strftime("%Y-%m-%d-%H-%M-%S-%f")
-
-#     # Mock request and user
-#     mock_request = MagicMock()
-
-#     mock_request.GET.get.side_effect = lambda key: {
-#         'termselection': '1',
-#         'user2': 'test_user2',
-#     }.get(key, None)
-
-#     assert mock_request.GET.get('termselection') == '1'
-#     assert mock_request.GET.get('user2') == 'test_user2'
-#     assert mock_request.GET.get('unknown_key') is None
-
-#     mock_request.user = Mock(username="test_user")
-#     mock_spotify_user = Mock(
-#         display_name="test_user",
-#         favorite_artists_medium=["artist1", "artist2"],
-#         favorite_tracks_medium=["track1", "track2"],
-#         favorite_genres_medium=["genre1", "genre2"],
-#         quirkiest_artists_medium=["quirky_artist1"],
-#         past_roasts=[]
-#     )
-#     mock_spotify_user2 = Mock(
-#         display_name="test_user2",
-#         favorite_artists_medium=["artistA", "artistB"],
-#         favorite_tracks_medium=["trackA", "trackB"],
-#         favorite_genres_medium=["genreA", "genreB"],
-#         quirkiest_artists_medium=["quirky_artistA"],
-#         past_roasts=[]
-#     )
-#     mock_get_user.side_effect = [mock_spotify_user, mock_spotify_user2]
-
-#     # Mock token with access_token as a string
-#     mock_get_token.return_value = Mock(access_token="mock_access_token")
-
-#     # Mock description and recommendations
-#     mock_create_description.return_value = "Generated description"
-#     mock_get_recommendations.return_value = ["placeholder1", "placeholder2", "placeholder3"]
-
-#     # Mock DuoWrapped creation with datetime_created
-#     mock_created_duo = Mock(
-#         user1="test_user",
-#         user2="test_user2",
-#         favorite_artists=["artist1", "artist2", "artistA", "artistB"],
-#         favorite_tracks=["track1", "track2", "trackA", "trackB"],
-#         favorite_genres=["genre1", "genre2", "genreA", "genreB"],
-#         quirkiest_artists=["quirky_artist1", "quirky_artistA"],
-#         llama_description="Generated description",
-#         llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#         datetime_created=formatted_datetime,  # Raw datetime for mock object
-#     )
-#     mock_create_duo.return_value = mock_created_duo
-
-#     # Mock serializer output including formatted datetime_created
-#     mock_serializer.return_value.data = {
-#         'user1': "test_user",
-#         'user2': "test_user2",
-#         'favorite_artists': ["artist1", "artist2", "artistA", "artistB"],
-#         'favorite_tracks': ["track1", "track2", "trackA", "trackB"],
-#         'favorite_genres': ["genre1", "genre2", "genreA", "genreB"],
-#         'quirkiest_artists': ["quirky_artist1", "quirky_artistA"],
-#         'llama_description': "Generated description",
-#         'llama_songrecs': ["placeholder1", "placeholder2", "placeholder3"],
-#         'datetime_created': formatted_datetime,  # Ensure formatted string
-#     }
-
-#     # Call the function
-#     response = add_duo_wrapped(mock_request)
-
-#     # Assertions
-#     assert isinstance(response, JsonResponse)
-#     assert response.status_code == 200
-
-#     # Verify creation call
-#     mock_create_duo.assert_called_once_with(
-#         user1="test_user",
-#         user2="test_user2",
-#         favorite_artists=["artist1", "artist2", "artistA", "artistB"],
-#         favorite_tracks=["track1", "track2", "trackA", "trackB"],
-#         favorite_genres=["genre1", "genre2", "genreA", "genreB"],
-#         quirkiest_artists=["quirky_artist1", "quirky_artistA"],
-#         llama_description="Generated description",
-#         llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#     )
-
-#     # Ensure both users' past roasts were updated
-#     mock_spotify_user.save.assert_called_once_with(update_fields=['past_roasts'])
-#     mock_spotify_user2.save.assert_called_once_with(update_fields=['past_roasts'])
-
-#     # Verify response contains serialized data including formatted datetime_created
-#     response_data = json.loads(response.content)
-#     assert 'duo_wrapped' in response_data
-#     assert response_data['duo_wrapped'] == mock_serializer.return_value.data
-
-
-# @patch('spotify_data.views.DuoWrappedSerializer')  # Mock the serializer
-# @patch('spotify_data.views.SpotifyUser.objects.get')  # Mock SpotifyUser retrieval
-# @patch('spotify_data.views.SpotifyToken.objects.get')  # Mock SpotifyToken retrieval
-# @patch('spotify_data.views.create_groq_description')  # Mock description generator
-# @patch('spotify_data.views.get_spotify_recommendations')  # Mock recommendations generator
-# @patch('spotify_data.views.DuoWrapped.objects.create')  # Mock object creation
-# def test_add_duo_wrapped_long_term(mock_create_duo, mock_get_recommendations,
-#                                     mock_create_description, mock_get_token,
-#                                     mock_get_user, mock_serializer):
-#     """
-#     Test successful creation of short-term DuoWrapped
-#     """
-
-#     # Define a mock datetime
-#     mock_datetime_created = datetime(2024, 11, 29, 12, 0, 0, 123456)
-#     formatted_datetime = mock_datetime_created.strftime("%Y-%m-%d-%H-%M-%S-%f")
-
-#     # Mock request and user
-#     mock_request = MagicMock()
-
-#     mock_request.GET.get.side_effect = lambda key: {
-#         'termselection': '2',
-#         'user2': 'test_user2',
-#     }.get(key, None)
-
-#     assert mock_request.GET.get('termselection') == '2'
-#     assert mock_request.GET.get('user2') == 'test_user2'
-#     assert mock_request.GET.get('unknown_key') is None
-
-#     mock_request.user = Mock(username="test_user")
-#     mock_spotify_user = Mock(
-#         display_name="test_user",
-#         favorite_artists_long=["artist1", "artist2"],
-#         favorite_tracks_long=["track1", "track2"],
-#         favorite_genres_long=["genre1", "genre2"],
-#         quirkiest_artists_long=["quirky_artist1"],
-#         past_roasts=[]
-#     )
-#     mock_spotify_user2 = Mock(
-#         display_name="test_user2",
-#         favorite_artists_long=["artistA", "artistB"],
-#         favorite_tracks_long=["trackA", "trackB"],
-#         favorite_genres_long=["genreA", "genreB"],
-#         quirkiest_artists_long=["quirky_artistA"],
-#         past_roasts=[]
-#     )
-#     mock_get_user.side_effect = [mock_spotify_user, mock_spotify_user2]
-
-#     # Mock token with access_token as a string
-#     mock_get_token.return_value = Mock(access_token="mock_access_token")
-
-#     # Mock description and recommendations
-#     mock_create_description.return_value = "Generated description"
-#     mock_get_recommendations.return_value = ["placeholder1", "placeholder2", "placeholder3"]
-
-#     # Mock DuoWrapped creation with datetime_created
-#     mock_created_duo = Mock(
-#         user1="test_user",
-#         user2="test_user2",
-#         favorite_artists=["artist1", "artist2", "artistA", "artistB"],
-#         favorite_tracks=["track1", "track2", "trackA", "trackB"],
-#         favorite_genres=["genre1", "genre2", "genreA", "genreB"],
-#         quirkiest_artists=["quirky_artist1", "quirky_artistA"],
-#         llama_description="Generated description",
-#         llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#         datetime_created=formatted_datetime,  # Raw datetime for mock object
-#     )
-#     mock_create_duo.return_value = mock_created_duo
-
-#     # Mock serializer output including formatted datetime_created
-#     mock_serializer.return_value.data = {
-#         'user1': "test_user",
-#         'user2': "test_user2",
-#         'favorite_artists': ["artist1", "artist2", "artistA", "artistB"],
-#         'favorite_tracks': ["track1", "track2", "trackA", "trackB"],
-#         'favorite_genres': ["genre1", "genre2", "genreA", "genreB"],
-#         'quirkiest_artists': ["quirky_artist1", "quirky_artistA"],
-#         'llama_description': "Generated description",
-#         'llama_songrecs': ["placeholder1", "placeholder2", "placeholder3"],
-#         'datetime_created': formatted_datetime,  # Ensure formatted string
-#     }
-
-#     # Call the function
-#     response = add_duo_wrapped(mock_request)
-
 #     # Assertions
 #     assert isinstance(response, JsonResponse)
 #     assert response.status_code == 200
@@ -832,319 +523,90 @@ def test_add_duo_wrapped_user_not_found(mock_create, mock_get, mock_request, moc
     mock_create.assert_not_called()
     mock_spotify_user.save.assert_not_called()
 
-# class DisplayArtistsViewTest(TestCase):
-#     '''Class to host all tests for artist view'''
-#     def setUp(self):
-#         """Set up for the following tests"""
-#         # Create a test user and SpotifyUser data
-#         self.client = Client()
-#         self.user = User.objects.create_user(username='testuser', password='testpass')
-#         self.dtshort = datetime_to_str(datetime(1,1,1,1,1,1,1))
-#         self.dtmedium = datetime_to_str(datetime(2,2,2,2,2,2,2))
-#         self.dtlong = datetime_to_str(datetime(3,3,3,3,3,3,3))
-#         self.spotify_wrapped_short = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='short_term',
-#             favorite_artists=[{'name': 'Artist Short',
-#                                'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             favorite_tracks=[{'name': 'Track Short',
-#                               'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             favorite_genres=['Genre Short'],
-#             quirkiest_artists=[{'name': 'Quirky Short',
-#                                 'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtshort,
-#         )
-#         self.spotify_wrapped_medium = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='medium_term',
-#             favorite_artists=[{'name': 'Artist Medium',
-#                                'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             favorite_tracks=[{'name': 'Track Medium',
-#                               'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             favorite_genres=['Genre Medium'],
-#             quirkiest_artists=[{'name': 'Quirky Medium',
-#                                 'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtmedium,
-#         )
-#         self.spotify_wrapped_long = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='long_term',
-#             favorite_artists=[{'name': 'Artist Long',
-#                                'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             favorite_tracks=[{'name': 'Track Long',
-#                               'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             favorite_genres=['Genre Long'],
-#             quirkiest_artists=[{'name': 'Quirky Long',
-#                                 'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtlong,
-#         )
+@pytest.mark.django_db
+@patch("spotify_data.models.DuoWrapped.objects.filter")
+def test_display_artists_duo(mock_filter, mock_request):
+    """
+    Test display_artists with DuoWrapped data.
+    """
+    mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
+    mock_filter.return_value.values.return_value = [{"favorite_artists": [{"name": "Artist 1", "images": [{"url": "http://example.com/img.jpg"}]}]}]
 
-#     # @patch('spotify_data.views.create_groq_description')
-#     # def test_display_artists_short_term(self, mock_create_description):
-#     #     '''Testing displaying artists for short term'''
-#     #     mock_create_description.return_value = 'Generated description'
-#     #     self.client.login(username='testuser', password='testpass')
+    response = display_artists(mock_request)
+    assert response.status_code == 200
+    assert response.json()[0]["name"] == "Artist 1"
 
-#     #     response = self.client.get(reverse('display_artists'), {'datetimecreated': self.dtshort})
+@pytest.mark.django_db
+@patch("spotify_data.models.DuoWrapped.objects.create")
+@patch("spotify_data.models.SpotifyUser.objects.get")
+@patch("spotify_data.views.create_groq_description")
+def test_add_duo_wrapped_success(mock_create_description, mock_get_user, mock_create_duo, mock_request):
+    """
+    Test successful creation of DuoWrapped data.
+    """
+    mock_request.GET.get.side_effect = lambda key: {"user1": "user1", "user2": "user2", "termselection": "0"}.get(key)
+    mock_get_user.side_effect = [Mock(favorite_artists_short=["artist1"]), Mock(favorite_artists_short=["artist2"])]
+    mock_create_description.return_value = "Generated description"
+    mock_create_duo.return_value = Mock()
 
-#     #     self.assertEqual(response.status_code, 200)
-#     #     data = json.loads(response.content)
-#     #     self.assertEqual(data[0]['name'], 'Artist Short')
-#     #     self.assertEqual(data[0]['image'], 'http://example.com/short.jpg')
-#     #     self.assertEqual(data[0]['desc'], 'Generated description')
-#     #     mock_create_description.assert_called_once()
-
-#     # @patch('spotify_data.views.create_groq_description')
-#     # def test_display_artists_medium_term(self, mock_create_description):
-#     #     '''Testing displaying artists for medium term'''
-#     #     mock_create_description.return_value = 'Generated description'
-#     #     self.client.login(username='testuser', password='testpass')
-
-#     #     response = self.client.get(reverse('display_artists'), {'datetimecreated': self.dtmedium})
-
-#     #     self.assertEqual(response.status_code, 200)
-#     #     data = json.loads(response.content)
-#     #     self.assertEqual(data[0]['name'], 'Artist Medium')
-#     #     self.assertEqual(data[0]['image'], 'http://example.com/medium.jpg')
-#     #     self.assertEqual(data[0]['desc'], 'Generated description')
-#     #     mock_create_description.assert_called_once()
-
-#     # @patch('spotify_data.views.create_groq_description')
-#     # def test_display_artists_long_term(self, mock_create_description):
-#     #     '''Test displaying artists for long term'''
-#     #     mock_create_description.return_value = 'Generated description'
-#     #     self.client.login(username='testuser', password='testpass')
-
-#     #     response = self.client.get(reverse('display_artists'), {'datetimecreated': self.dtlong})
-
-#     #     self.assertEqual(response.status_code, 200)
-#     #     data = json.loads(response.content)
-#     #     self.assertEqual(data[0]['name'], 'Artist Long')
-#     #     self.assertEqual(data[0]['image'], 'http://example.com/long.jpg')
-#     #     self.assertEqual(data[0]['desc'], 'Generated description')
-#     #     mock_create_description.assert_called_once()
-
-#     # def test_display_artists_user_not_authenticated(self):
-#     #     response = self.client.get(reverse('display_artists'), {'timeframe': '0'})
-#     #     self.assertEqual(response.status_code, 302)  # Redirect to login page
+    response = add_duo_wrapped(mock_request)
+    assert isinstance(response, JsonResponse)
+    assert response.status_code == 200
+    assert "duo_wrapped" in response.json()
 
 
-# class DisplayGenresViewTest(TestCase):
-#     '''Class for all tests on genre display view'''
-#     def setUp(self):
-#         '''Set up for all following tests'''
-#         # Create a test user and SpotifyUser data
-#         self.client = Client()
-#         self.user = User.objects.create_user(username='testuser', password='testpass')
-#         self.dtshort = datetime_to_str(datetime(1, 1, 1, 1, 1, 1, 1))
-#         self.dtmedium = datetime_to_str(datetime(2, 2, 2, 2, 2, 2, 2))
-#         self.dtlong = datetime_to_str(datetime(3, 3, 3, 3, 3, 3, 3))
-#         self.spotify_wrapped_short = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='short_term',
-#             favorite_artists=[{'name': 'Artist Short',
-#                                'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             favorite_tracks=[{'name': 'Track Short',
-#                               'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             favorite_genres=['Genre Short'],
-#             quirkiest_artists=[{'name': 'Quirky Short',
-#                                 'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtshort,
-#         )
-#         self.spotify_wrapped_medium = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='medium_term',
-#             favorite_artists=[{'name': 'Artist Medium',
-#                                'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             favorite_tracks=[{'name': 'Track Medium',
-#                               'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             favorite_genres=['Genre Medium'],
-#             quirkiest_artists=[{'name': 'Quirky Medium',
-#                                 'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtmedium,
-#         )
-#         self.spotify_wrapped_long = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='long_term',
-#             favorite_artists=[{'name': 'Artist Long',
-#                                'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             favorite_tracks=[{'name': 'Track Long',
-#                               'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             favorite_genres=['Genre Long'],
-#             quirkiest_artists=[{'name': 'Quirky Long',
-#                                 'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtlong,
-#         )
+@pytest.mark.django_db
+@patch("spotify_data.models.SpotifyUser.objects.get")
+def test_add_duo_wrapped_user2_not_found(mock_get_user, mock_request):
+    """
+    Test handling of user2 not found for DuoWrapped.
+    """
+    mock_request.GET.get.side_effect = lambda key: {"user1": "user1", "user2": "invalid_user", "termselection": "0"}.get(key)
+    mock_get_user.side_effect = [Mock(), SpotifyUser.DoesNotExist]
 
-#     @patch('spotify_data.views.create_groq_description')
-#     def test_display_genres_short_term(self, mock_create_description):
-#         '''Testing display genres in short term'''
-#         mock_create_description.return_value = 'Generated description'
-#         self.client.login(username='testuser', password='testpass')
-
-#         response = self.client.get(reverse('display_genres'), {'datetimecreated': self.dtshort})
-
-#         self.assertEqual(response.status_code, 200)
-#         data = json.loads(response.content)
-#         self.assertEqual(data['genres'], 'Genre Short')
-#         self.assertEqual(data['desc'], 'Generated description')
-#         mock_create_description.assert_called_once()
-
-#     @patch('spotify_data.views.create_groq_description')
-#     def test_display_genres_medium_term(self, mock_create_description):
-#         '''Testing displaying genres in medium term'''
-#         mock_create_description.return_value = 'Generated description'
-#         self.client.login(username='testuser', password='testpass')
-
-#         response = self.client.get(reverse('display_genres'), {'datetimecreated': self.dtmedium})
-
-#         self.assertEqual(response.status_code, 200)
-#         data = json.loads(response.content)
-#         self.assertEqual(data['genres'], 'Genre Medium')
-#         self.assertEqual(data['desc'], 'Generated description')
-#         mock_create_description.assert_called_once()
-
-#     @patch('spotify_data.views.create_groq_description')
-#     def test_display_genres_long_term(self, mock_create_description):
-#         '''Testing display genres in long term'''
-#         mock_create_description.return_value = 'Generated description'
-#         self.client.login(username='testuser', password='testpass')
-
-#         response = self.client.get(reverse('display_genres'), {'datetimecreated': self.dtlong})
-
-#         self.assertEqual(response.status_code, 200)
-#         data = json.loads(response.content)
-#         self.assertEqual(data['genres'], 'Genre Long')
-#         self.assertEqual(data['desc'], 'Generated description')
-#         mock_create_description.assert_called_once()
-
-#     # def test_display_genres_user_not_authenticated(self):
-#     #     response = self.client.get(reverse('display_genres'), {'timeframe': '0'})
-#     #     self.assertEqual(response.status_code, 302)  # Redirect to login page
+    response = add_duo_wrapped(mock_request)
+    assert isinstance(response, HttpResponse)
+    assert response.status_code == 500
+    assert response.content == b"User display name not found"
 
 
-# class DisplaySongsViewTest(TestCase):
-#     '''Class for tests on song view'''
-#     def setUp(self):
-#         '''setup for the following tests'''
-#         # Create a test user and SpotifyUser data
-#         self.client = Client()
-#         self.user = User.objects.create_user(username='testuser', password='testpass')
-#         self.dtshort = datetime_to_str(datetime(1, 1, 1, 1, 1, 1, 1))
-#         self.dtmedium = datetime_to_str(datetime(2, 2, 2, 2, 2, 2, 2))
-#         self.dtlong = datetime_to_str(datetime(3, 3, 3, 3, 3, 3, 3))
-#         self.spotify_wrapped_short = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='short_term',
-#             favorite_artists=[{'name': 'Artist Short',
-#                                'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             favorite_tracks=[{
-#                 'name': 'Track Short',
-#                 'artists': [{'name': 'Artist Short'}],
-#                 'album': {'images': [{'url': 'http://example.com/track_short.jpg'}]}
-#             }],
-#             favorite_genres=['Genre Short'],
-#             quirkiest_artists=[{'name': 'Quirky Short',
-#                                 'images': [{'url': 'http://example.com/short.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtshort,
-#         )
-#         self.spotify_wrapped_medium = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='medium_term',
-#             favorite_artists=[{'name': 'Artist Medium',
-#                                'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             favorite_tracks=[{
-#                 'name': 'Track Medium',
-#                 'artists': [{'name': 'Artist Medium'}],
-#                 'album': {'images': [{'url': 'http://example.com/track_medium.jpg'}]}
-#             }],
-#             favorite_genres=['Genre Medium'],
-#             quirkiest_artists=[{'name': 'Quirky Medium',
-#                                 'images': [{'url': 'http://example.com/medium.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtmedium,
-#         )
-#         self.spotify_wrapped_long = SpotifyWrapped.objects.create(
-#             user=self.user,
-#             term_selection='long_term',
-#             favorite_artists=[{'name': 'Artist Long',
-#                                'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             favorite_tracks=[{
-#                 'name': 'Track Long',
-#                 'artists': [{'name': 'Artist Long'}],
-#                 'album': {'images': [{'url': 'http://example.com/track_long.jpg'}]}
-#             }],
-#             favorite_genres=['Genre Long'],
-#             quirkiest_artists=[{'name': 'Quirky Long',
-#                                 'images': [{'url': 'http://example.com/long.jpg'}]}],
-#             llama_description='Generated description',
-#             llama_songrecs=["placeholder1", "placeholder2", "placeholder3"],
-#             datetime_created=self.dtlong,
-#         )
+@pytest.mark.django_db
+@patch("spotify_data.models.DuoWrapped.objects.get")
+def test_display_genres_duo_success(mock_get_duo, mock_request):
+    """
+    Test display_genres with DuoWrapped data.
+    """
+    mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
+    mock_get_duo.return_value = Mock(favorite_genres=["Genre 1", "Genre 2"])
+    response = display_genres(mock_request)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["genres"] == "Genre 1, Genre 2"
+    assert "desc" in data
 
-#     @patch('spotify_data.views.create_groq_description')
-#     def test_display_songs_short_term(self, mock_create_description):
-#         '''testing if we display songs for short term'''
-#         mock_create_description.return_value = 'Generated description'
-#         self.client.login(username='testuser', password='testpass')
 
-#         response = self.client.get(reverse('display_songs'), {'datetimecreated': self.dtshort})
+@pytest.mark.django_db
+@patch("spotify_data.models.DuoWrapped.objects.get")
+def test_display_genres_duo_no_data(mock_get_duo, mock_request):
+    """
+    Test display_genres with DuoWrapped data when no data is found.
+    """
+    mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
+    mock_get_duo.side_effect = ObjectDoesNotExist
+    response = display_genres(mock_request)
+    assert response.status_code == 500
+    assert response.content == b"Wrapped grab failed: no data"
 
-#         self.assertEqual(response.status_code, 200)
-#         data = json.loads(response.content)
-#         self.assertEqual(data[0]['name'], 'Track Short')
-#         self.assertEqual(data[0]['artist'], 'Artist Short')
-#         self.assertEqual(data[0]['image'], 'http://example.com/track_short.jpg')
-#         self.assertEqual(data[0]['desc'], 'Generated description')
-#         mock_create_description.assert_called_once()
 
-#     @patch('spotify_data.views.create_groq_description')
-#     def test_display_songs_medium_term(self, mock_create_description):
-#         '''testing if we display songs for medium term'''
-#         mock_create_description.return_value = 'Generated description'
-#         self.client.login(username='testuser', password='testpass')
+@pytest.mark.django_db
+@patch("spotify_data.models.SpotifyWrapped.objects.filter")
+def test_display_genres_single_no_data(mock_filter, mock_request):
+    """
+    Test display_genres with SpotifyWrapped data when no data is found.
+    """
+    mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "false"}.get(key)
+    mock_filter.return_value.values.side_effect = ObjectDoesNotExist
+    response = display_genres(mock_request)
+    assert response.status_code == 500
+    assert response.content == b"Wrapped grab failed: no data"
 
-#         response = self.client.get(reverse('display_songs'), {'datetimecreated': self.dtmedium})
-
-#         self.assertEqual(response.status_code, 200)
-#         data = json.loads(response.content)
-#         self.assertEqual(data[0]['name'], 'Track Medium')
-#         self.assertEqual(data[0]['artist'], 'Artist Medium')
-#         self.assertEqual(data[0]['image'], 'http://example.com/track_medium.jpg')
-#         self.assertEqual(data[0]['desc'], 'Generated description')
-#         mock_create_description.assert_called_once()
-
-#     @patch('spotify_data.views.create_groq_description')
-#     def test_display_songs_long_term(self, mock_create_description):
-#         '''testing if we display songs for long term'''
-#         mock_create_description.return_value = 'Generated description'
-#         self.client.login(username='testuser', password='testpass')
-
-#         response = self.client.get(reverse('display_songs'), {'datetimecreated': self.dtlong})
-
-#         self.assertEqual(response.status_code, 200)
-#         data = json.loads(response.content)
-#         self.assertEqual(data[0]['name'], 'Track Long')
-#         self.assertEqual(data[0]['artist'], 'Artist Long')
-#         self.assertEqual(data[0]['image'], 'http://example.com/track_long.jpg')
-#         self.assertEqual(data[0]['desc'], 'Generated description')
-#         mock_create_description.assert_called_once()
-
-#     # def test_display_songs_user_not_authenticated(self):
-#     #     response = self.client.get(reverse('display_songs'), {'timeframe': '0'})
-#     #     self.assertEqual(response.status_code, 302)  # Redirect to login page

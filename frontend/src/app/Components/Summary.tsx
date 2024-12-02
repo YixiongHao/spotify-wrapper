@@ -1,5 +1,6 @@
 // Summary.tsx
 import React from "react";
+import Heading2 from "@/app/Components/Heading2";
 
 type SummaryComponentProps = {
     artists: string[];
@@ -10,27 +11,37 @@ type SummaryComponentProps = {
 
 const SummaryComponent: React.FC<SummaryComponentProps> = ({ artists, tracks, quirky, genres }) => {
     return (
-        <div>
-            <h2>Top Artists</h2>
+        <div className={"flex flex-col min-h-screen items-center justify-center"}>
+        <div className={"flex flex-row items-center justify-center space-x-10 text-center"}>
+            <div>
+            <Heading2 text = {"Top Artists"}/>
             <ul>
                 {artists.map((artist, index) => (
                     <li key={index}>{artist}</li>
                 ))}
             </ul>
-            <h2>Top Tracks</h2>
+                </div>
+            <div>
+            <Heading2 text = {"Top Tracks"}/>
             <ul>
                 {tracks.map((track, index) => (
                     <li key={index}>{track}</li>
                 ))}
             </ul>
-            <h2>Quirky Favorite</h2>
+                </div>
+            <div>
+            <Heading2 text = {"Quirky Favorite"}/>
             <p>{quirky}</p>
-            <h2>Genres</h2>
+                </div>
+            <div>
+            <Heading2 text = {"Top Genres"}/>
             <ul>
                 {genres.map((genre, index) => (
                     <li key={index}>{genre}</li>
                 ))}
             </ul>
+                </div>
+        </div>
         </div>
     );
 };

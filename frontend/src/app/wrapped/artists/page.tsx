@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
 import Artist from "@/app/Components/Artist";
+import Loading from "@/app/Components/Loading";
+import Comparison from "@/app/Components/Comparison";
 
 export default function Artists() {
     const router = useRouter();
@@ -65,21 +67,32 @@ export default function Artists() {
             console.error("Error fetching SpotifyUser data:", error);
         }
     }
-    return (
-        <div className={"flex flex-row justify-center"}>
+
+    if (isDuo) {
+        return(<>
             {artists.length > 0 ? (
-                artists.map((artist: { name: string; image: string; desc: string; }, index: number) => (
-                    <Artist
-                        key={index}
-                        name={artist.name}
-                        img={artist.image} // Ensure `image` matches your API response
-                        desc={artist.desc}
-                        rank={index + 1}
-                    />
-                ))
-            ) : (
-                <p>Loading artists...</p>
-            )}
-        </div>
-    );
+                <Comparison name1={artists[0].name} name2={artists[1].name} img1={artists[0].image} img2={artists[1].image} desc={artists[0].desc}/>
+                ) : (
+                    <Loading text={"artist comparisons"}/>
+                )}
+        </>);
+    } else {
+        return (
+            <div className={"flex flex-row justify-center"}>
+                {artists.length > 0 ? (
+                    artists.map((artist: { name: string; image: string; desc: string; }, index: number) => (
+                        <Artist
+                            key={index}
+                            name={artist.name}
+                            img={artist.image} // Ensure `image` matches your API response
+                            desc={artist.desc}
+                            rank={index + 1}
+                        />
+                    ))
+                ) : (
+                    <Loading text={"artists"}/>
+                )}
+            </div>
+        );
+    }
 }
