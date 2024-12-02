@@ -527,12 +527,14 @@ def test_add_duo_wrapped_user_not_found(mock_create, mock_get, mock_request, moc
 
 @pytest.mark.django_db
 @patch("spotify_data.models.DuoWrapped.objects.filter")
-def test_display_artists_duo(mock_filter, mock_request):
+@patch("spotify_data.views.create_groq_comparison")
+def test_display_artists_duo(mock_comparison, mock_filter, mock_request):
     """
     Test display_artists with DuoWrapped data.
     """
     mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
     mock_filter.return_value.values.return_value = [{"favorite_artists": [{"name": "Artist 1", "images": [{"url": "http://example.com/img.jpg"}]}]}]
+    mock_comparison.return_value = "Generated description"
 
     response = display_artists(mock_request)
     assert response.status_code == 200
@@ -631,20 +633,32 @@ def test_add_duo_wrapped_user2_not_found(mock_get_user, mock_request):
 
 
 @pytest.mark.django_db
+@patch("spotify_data.views.create_groq_description")
 @patch("spotify_data.models.DuoWrapped.objects.filter")
-def test_display_genres_duo_success(mock_duo_filter, mock_request):
+def test_display_genres_duo_success(mock_duo_filter, mock_groq_description, mock_request):
     """
     Test display_genres with DuoWrapped data.
     """
+    # Simulate query parameters in the request
     mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
+
+    # Mock the database query result
     mock_duo_filter.return_value.values.return_value = [
         {"id": "1", "favorite_genres": ["Genre 1", "Genre 2"]}
     ]
+
+    # Mock the create_groq_description function return value
+    mock_groq_description.return_value = "Generated description"
+
+    # Call the view function
     response = display_genres(mock_request)
+
+    # Validate the response
     assert response.status_code == 200
     data = json.loads(response.content)
     assert data["genres"] == "Genre 1, Genre 2"
     assert "desc" in data
+    assert data["desc"] == "Generated description"
 
 
 @pytest.mark.django_db
