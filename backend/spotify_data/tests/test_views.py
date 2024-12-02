@@ -527,13 +527,15 @@ def test_add_duo_wrapped_user_not_found(mock_create, mock_get, mock_request, moc
 
 @pytest.mark.django_db
 @patch("spotify_data.models.DuoWrapped.objects.filter")
+@patch("spotify_data.views.create_groq_description")
 @patch("spotify_data.views.create_groq_comparison")
-def test_display_artists_duo(mock_comparison, mock_filter, mock_request):
+def test_display_artists_duo(mock_comparison, mock_description, mock_filter, mock_request):
     """
     Test display_artists with DuoWrapped data.
     """
     mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
     mock_filter.return_value.values.return_value = [{"favorite_artists": [{"name": "Artist 1", "images": [{"url": "http://example.com/img.jpg"}]}]}]
+    mock_description.return_value = "Generated description"
     mock_comparison.return_value = "Generated description"
 
     response = display_artists(mock_request)
