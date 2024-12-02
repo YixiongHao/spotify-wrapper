@@ -75,7 +75,7 @@ class WrapBase(models.Model):
     quirkiest_artists = models.JSONField(default=list, blank=True, null=True)
     llama_description = models.TextField(blank=True, null=True)
     llama_songrecs = models.TextField(blank=True, null=True)
-    datetime_created = models.CharField(default=datetime_to_str(datetime.now()), max_length=50)
+    datetime_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         '''Meta'''
