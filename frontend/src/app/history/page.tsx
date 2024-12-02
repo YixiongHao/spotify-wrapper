@@ -55,8 +55,8 @@ export default function History() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/delete/${deleteId}`, {
-                method: 'DELETE',
+            const response = await fetch(`http://localhost:8000/spotify_data/delete?deleteId=${deleteId}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },

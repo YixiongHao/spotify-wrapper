@@ -29,7 +29,7 @@ const SpotifyUserPage = () => {
             const user2 = localStorage.getItem("user2") || "user2";
             if (localStorage.getItem("isDuo") == '1') {
                 const wrappedResponse = await fetch(
-                    `http://localhost:8000/spotify_data/addduo/?termselection=${encodeURIComponent(termselection)}&user1=${encodeURIComponent(user1)}&user2=${encodeURIComponent(user2)}`,
+                    `http://localhost:8000/spotify_data/addduo/?termselection=${termselection}&user1=${encodeURIComponent(user1)}&user2=${encodeURIComponent(user2)}`,
                     {
                         method: "GET",
                         headers: {
@@ -47,7 +47,7 @@ const SpotifyUserPage = () => {
                 localStorage.setItem("id", wrappedData.id);
             } else {
                 const wrappedResponse = await fetch(
-                    `http://localhost:8000/spotify_data/addwrapped/?termselection=${encodeURIComponent(termselection)}`,
+                    `http://localhost:8000/spotify_data/addwrapped/?termselection=${termselection}`,
                     {
                         method: "GET",
                         headers: {

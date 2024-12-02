@@ -304,7 +304,8 @@ def create_groq_comparison(groq_api_key, artist_1, artist_2):
     client = Groq(api_key=groq_api_key)
     description_prompt = (
         f"Compare {artist_1} and {artist_2} in a funny and way that roasts both. "
-        "Highlight their differences in style, fanbase, and anything else that makes them opposites."
+        "Highlight their differences in style, fanbase, and "
+        "anything else that makes them opposites."
     )
 
     try:
@@ -312,8 +313,10 @@ def create_groq_comparison(groq_api_key, artist_1, artist_2):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a music critic who roasts and humorously compares two artists "
-                               "(use 2nd perspective) in less than 100 words. Be witty and sarcastic."
+                    "content": "You are a music critic who roasts and humorously "
+                               "compares two artists "
+                               "(use 2nd perspective) in less than 100 words. "
+                               "Be witty and sarcastic."
                 },
                 {
                     "role": "user",

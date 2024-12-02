@@ -136,6 +136,7 @@ def add_spotify_wrapped(request):
         return HttpResponse("Bad term selection", status=400)
     wrapped = SpotifyWrapped.objects.create(  # pylint: disable=no-member
         user=spotify_user.display_name,
+        term_selection=term_selection,
         favorite_artists=favorite_artists,
         favorite_tracks=favorite_tracks,
         favorite_genres=favorite_genres,
@@ -202,7 +203,8 @@ def add_duo_wrapped(request):
             favorite_genres = alternate_lists(
                 spotify_user1.favorite_genres_medium, spotify_user2.favorite_genres_medium, 3, 2)
             quirkiest_artists = alternate_lists(
-                spotify_user1.quirkiest_artists_medium, spotify_user2.quirkiest_artists_medium, 3, 2)
+                spotify_user1.quirkiest_artists_medium,
+                spotify_user2.quirkiest_artists_medium, 3, 2)
         case '2':
             favorite_artists = alternate_lists(
                 spotify_user1.favorite_artists_long, spotify_user2.favorite_artists_long, 3, 2)
@@ -219,6 +221,7 @@ def add_duo_wrapped(request):
     wrapped = DuoWrapped.objects.create(  # pylint: disable=no-member
         user=spotify_user1.display_name,
         user2=spotify_user2.display_name,
+        term_selection=term_selection,
         favorite_artists=favorite_artists,
         favorite_tracks=favorite_tracks,
         quirkiest_artists=quirkiest_artists,
@@ -241,13 +244,13 @@ def display_artists(request):
     is_duo = request.GET.get('isDuo')
     if is_duo == 'true':
         try:
-            wrapped_data = DuoWrapped.objects.filter(id=id).values()
+            wrapped_data = DuoWrapped.objects.filter(id=id).values() # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
         wrapped_data = list(wrapped_data)[0]
     else:
         try:
-            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()
+            wrapped_data = SpotifyWrapped.objects.filter(id=id).values() # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
         wrapped_data = list(wrapped_data)[0]
@@ -259,7 +262,7 @@ def display_artists(request):
     for i, artist in enumerate(artists):
         artist_info = {
             'name': artist['name'],
-            'image': artist['images'][0]['url'],
+            'image': artist['images'][0]['url'] if artist['images'] else None,
             'desc': create_groq_description(os.getenv('GROQ_API_KEY'), artist['name']),
         }
         if is_duo == 'true':
@@ -285,12 +288,12 @@ def display_genres(request):
 
     if is_duo == 'true':
         try:
-            wrapped_data = DuoWrapped.objects.filter(id=id).values()
+            wrapped_data = DuoWrapped.objects.filter(id=id).values() # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     else:
         try:
-            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()
+            wrapped_data = SpotifyWrapped.objects.filter(id=id).values() # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     wrapped_data = list(wrapped_data)[0]
@@ -311,9 +314,9 @@ def display_songs(request):
     # Fetch the appropriate wrapped data (DuoWrapped or SpotifyWrapped)
     try:
         if is_duo == 'true':
-            wrapped_data = DuoWrapped.objects.filter(id=id).values()
+            wrapped_data = DuoWrapped.objects.filter(id=id).values() # pylint: disable=no-member
         else:
-            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()
+            wrapped_data = SpotifyWrapped.objects.filter(id=id).values() # pylint: disable=no-member
     except ObjectDoesNotExist:
         return HttpResponse("Wrapped grab failed: no data", status=500)
 
@@ -355,12 +358,12 @@ def display_quirky(request):
 
     if is_duo == 'true':
         try:
-            wrapped_data = DuoWrapped.objects.filter(id=id).values()
+            wrapped_data = DuoWrapped.objects.filter(id=id).values()  # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     else:
         try:
-            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()
+            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()  # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     wrapped_data = list(wrapped_data)[0]
@@ -382,12 +385,12 @@ def display_summary(request):
 
     if is_duo == 'true':
         try:
-            wrapped_data = DuoWrapped.objects.filter(id=id).values()
+            wrapped_data = DuoWrapped.objects.filter(id=id).values()  # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     else:
         try:
-            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()
+            wrapped_data = SpotifyWrapped.objects.filter(id=id).values()  # pylint: disable=no-member
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     wrapped_data = list(wrapped_data)[0]
@@ -418,7 +421,7 @@ def display_history(request):
     user = request.user
 
     try:
-        user_data = SpotifyUser.objects.get(display_name=user.username)
+        user_data = SpotifyUser.objects.get(display_name=user.username)  # pylint: disable=no-member
     except ObjectDoesNotExist:
         return HttpResponse("User grab failed: no data", status=500)
 
@@ -444,7 +447,7 @@ def check_username_exists(request):
     """
     username = request.GET.get('username')  # Get the username from the request
 
-    users = SpotifyUser.objects.all()  # Retrieve all SpotifyUser objects
+    users = SpotifyUser.objects.all() # pylint: disable=no-member
     for user in users:
         print(user.display_name)
 
@@ -453,7 +456,7 @@ def check_username_exists(request):
 
     try:
         # Query the database for the username
-        SpotifyUser.objects.get(display_name=username)
+        SpotifyUser.objects.get(display_name=username)  # pylint: disable=no-member
         return JsonResponse({'exists': True}, status=200)
     except ObjectDoesNotExist:
         return JsonResponse({'exists': False}, status=200)
@@ -463,7 +466,7 @@ def delete(request):
     delete wrapped with corresponding id.
     """
     delete_id = int(request.GET.get('deleteId'))
-    spotify_user = SpotifyUser.objects.get(display_name=request.user.username)
+    spotify_user = SpotifyUser.objects.get(display_name=request.user.username)  # pylint: disable=no-member
     delete_wrapped = None
     for wrapped in spotify_user.past_roasts:
         if wrapped['id'] == delete_id:
