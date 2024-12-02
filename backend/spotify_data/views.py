@@ -14,7 +14,8 @@ from .utils import (get_spotify_user_data, get_user_favorite_artists,
                     get_user_favorite_tracks,
                     get_top_genres, get_quirkiest_artists,
                     create_groq_description,
-                    create_groq_quirky)
+                    create_groq_quirky,
+                    interlock)
 from .models import Song, SpotifyUser, SpotifyWrapped, DuoWrapped
 from .serializers import (SongSerializer, SpotifyUserSerializer,
                           DuoWrappedSerializer, SpotifyWrappedSerializer)
@@ -174,32 +175,32 @@ def add_duo_wrapped(request):
     quirkiest_artists = None
     match term_selection:
         case '0':
-            favorite_artists = (spotify_user1.favorite_artists_short[:3]
-                                + spotify_user2.favorite_artists_short[:2])
-            favorite_tracks = (spotify_user1.favorite_tracks_short[:3]
-                               + spotify_user2.favorite_tracks_short[:2])
-            favorite_genres = (spotify_user1.favorite_genres_short[:3]
-                               + spotify_user2.favorite_genres_short[:2])
-            quirkiest_artists = (spotify_user1.quirkiest_artists_short[:3]
-                                 + spotify_user2.quirkiest_artists_short[:2])
+            favorite_artists = interlock (spotify_user1.favorite_artists_short[:3],
+                                spotify_user2.favorite_artists_short[:2])
+            favorite_tracks = interlock(spotify_user1.favorite_tracks_short[:3],
+                               spotify_user2.favorite_tracks_short[:2])
+            favorite_genres = interlock(spotify_user1.favorite_genres_short[:3],
+                               spotify_user2.favorite_genres_short[:2])
+            quirkiest_artists = interlock(spotify_user1.quirkiest_artists_short[:3],
+                                 spotify_user2.quirkiest_artists_short[:2])
         case '1':
-            favorite_artists = (spotify_user1.favorite_artists_medium[:3]
-                                + spotify_user2.favorite_artists_medium[:2])
-            favorite_tracks = (spotify_user1.favorite_tracks_medium[:3]
-                               + spotify_user2.favorite_tracks_medium[:2])
-            favorite_genres = (spotify_user1.favorite_genres_medium[:3]
-                               + spotify_user2.favorite_genres_medium[:2])
-            quirkiest_artists = (spotify_user1.quirkiest_artists_medium[:3]
-                                 + spotify_user2.quirkiest_artists_medium[:2])
+            favorite_artists = interlock(spotify_user1.favorite_artists_medium[:3],
+                                spotify_user2.favorite_artists_medium[:2])
+            favorite_tracks = interlock(spotify_user1.favorite_tracks_medium[:3],
+                               spotify_user2.favorite_tracks_medium[:2])
+            favorite_genres = interlock(spotify_user1.favorite_genres_medium[:3],
+                               spotify_user2.favorite_genres_medium[:2])
+            quirkiest_artists = interlock(spotify_user1.quirkiest_artists_medium[:3],
+                                 spotify_user2.quirkiest_artists_medium[:2])
         case '2':
-            favorite_artists = (spotify_user1.favorite_artists_long[:3]
-                                + spotify_user2.favorite_artists_long[:2])
-            favorite_tracks = (spotify_user1.favorite_tracks_long[:3]
-                               + spotify_user2.favorite_tracks_long[:2])
-            favorite_genres = (spotify_user1.favorite_genres_long[:3]
-                               + spotify_user2.favorite_genres_long[:2])
-            quirkiest_artists = (spotify_user1.quirkiest_artists_long[:3]
-                                 + spotify_user2.quirkiest_artists_long[:2])
+            favorite_artists = interlock(spotify_user1.favorite_artists_long[:3],
+                                spotify_user2.favorite_artists_long[:2])
+            favorite_tracks = interlock(spotify_user1.favorite_tracks_long[:3],
+                               spotify_user2.favorite_tracks_long[:2])
+            favorite_genres = interlock(spotify_user1.favorite_genres_long[:3],
+                               spotify_user2.favorite_genres_long[:2])
+            quirkiest_artists = interlock(spotify_user1.quirkiest_artists_long[:3],
+                                 spotify_user2.quirkiest_artists_long[:2])
     if favorite_artists is None:
         return HttpResponse("Bad term selection", status=400)
     wrapped = DuoWrapped.objects.create(  # pylint: disable=no-member
@@ -216,7 +217,6 @@ def add_duo_wrapped(request):
     spotify_user1.save(update_fields=['past_roasts'])
     spotify_user2.past_roasts.append(wrapped_data)
     spotify_user2.save(update_fields=['past_roasts'])
-    print(wrapped.id)
     return JsonResponse({'duo_wrapped': wrapped_data})
 
 def display_artists(request):
@@ -224,6 +224,7 @@ def display_artists(request):
     load_dotenv()
     id = request.GET.get('id')
     is_duo = request.GET.get('isDuo')
+    print(is_duo, request.user.username, id)
     if is_duo == 'true':
         try:
             wrapped_data = DuoWrapped.objects.filter(id=id).values()
@@ -256,7 +257,7 @@ def display_genres(request):
 
     if is_duo == 'true':
         try:
-            wrapped_data = DuoWrapped.objects.get(id=id)
+            wrapped_data = DuoWrapped.objects.filter(id=id).values()
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     else:
@@ -338,7 +339,6 @@ def display_summary(request):
     id = request.GET.get('id')
 
     is_duo = request.GET.get('isDuo')
-
     if is_duo == 'true':
         try:
             wrapped_data = DuoWrapped.objects.filter(id=id).values()
@@ -412,7 +412,7 @@ def check_username_exists(request):
 
     try:
         # Query the database for the username
-        SpotifyUser.objects.filter(display_name=username)
+        SpotifyUser.objects.get(display_name=username)
         return JsonResponse({'exists': True}, status=200)
     except ObjectDoesNotExist:
         return JsonResponse({'exists': False}, status=200)

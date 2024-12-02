@@ -38,21 +38,23 @@ export default function Genres() {
     const [timeRange, setTimeRange] = useState<number>(2);
 
     useEffect(() => {
-        const duo = localStorage.getItem("isDuo");
+        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
         if (duo) {
             setIsDuo(duo === 'true');
         }
     }, []);
 
     useEffect(() => {
-        if (id && isDuo !== null) {
+        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
+        if (id && duo !== null) {
             fetchFavoriteGenres(id).catch(console.error);
         }
     }, [id]);
 
     async function fetchFavoriteGenres(id: string): Promise<void> {
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/displaygenres?id=${id}&isDuo=${isDuo}`, {
+            const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
+            const response = await fetch(`http://localhost:8000/spotify_data/displaygenres?id=${id}&isDuo=${duo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

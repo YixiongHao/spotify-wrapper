@@ -283,5 +283,18 @@ def str_to_datetime(dtstr):
     Convert string to datetime object.
     """
     strlist = dtstr.split("-")
-    return datetime(strlist[0], strlist[1], strlist[2], strlist[3],
-                    strlist[4], strlist[5], strlist[6])
+    y = int(strlist[0])
+    m = int(strlist[1])
+    d = int(strlist[2])
+    H = int(strlist[3])
+    M = int(strlist[4])
+    S = int(strlist[5])
+    f = int(strlist[6])
+    return datetime(y, m, d, H, M, S, f)
+
+def interlock(arr1, arr2):
+    """
+    zip two arrays together. Try to assume arr1 has length 3.
+    """
+    combined = [item for pair in zip(arr1, arr2) for item in pair]
+    return combined + [arr1[2]] if len(arr1) > 2 else combined

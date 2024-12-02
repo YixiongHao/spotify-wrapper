@@ -83,14 +83,17 @@ export default function Dashboard() {
         localStorage.setItem("timeRange", value.toString()); // Save to localStorage
     };
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault(); // Prevent default form submission
         if (otherUser.trim()) {
             console.log(otherUser);
-            checkUsername(otherUser);
-            localStorage.setItem("isDuo", '1');
-            localStorage.setItem("user2", otherUser);
-            router.push(`/wrapped/title`); // Navigate to the duo wrapped
+            updateUser();
+            const success = await checkUsername(otherUser);
+            if (success !== null) {
+                localStorage.setItem("isDuo", '1');
+                localStorage.setItem("user2", otherUser);
+                router.push(`/wrapped/title`); // Navigate to the duo wrapped
+            }
         }
     };
 
@@ -106,26 +109,11 @@ export default function Dashboard() {
             const data = await response.json();
             if (data.exists) {
                 setPopupMessage(null); // Clear popup if username exists
+                return 1 // success
             } else {
                 setPopupMessage("Username does not exist. Please retype it.");
-            }            
-        } catch (error) {
-            console.error("Error checking username:", error);
-        }
-    }
-
-    async function createDuoWrapped(user2: String) {
-        try {
-            const termselection = localStorage.getItem("timeRange") || "1";
-            const response = await fetch(`http://localhost:8000/spotify_data/addduo?user1=${username}&user2=${user2}&termselection=${termselection}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-    
-            const data = await response.json();
-            console.log(data);
+                return null
+            }
         } catch (error) {
             console.error("Error checking username:", error);
         }
@@ -175,6 +163,26 @@ export default function Dashboard() {
         }
       }
 
+      async function updateUser(){
+          // Fetch user data
+            const response = await fetch(`http://localhost:8000/spotify_data/updateuser`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                console.error("Failed to fetch SpotifyUser data");
+                return;
+            }
+
+            let data = await response.json();
+            data = data.spotify_user;
+            console.log(data);
+    }
+
     return (
         <div className="flex flex-col items-center p-6 space-y-6 min-h-screen justify-center">
             <Heading1 text={`${username} again? Yikes`} />
@@ -210,7 +218,7 @@ export default function Dashboard() {
                         checked={timeframe === 2}
                     />
                 </div>
-                <Button text="Generate Roast" method={() => null} extraClasses="mt-10 w-50 ml-auto mr-auto" />
+                <Button text="Generate Roast" method={updateUser} extraClasses="mt-10 w-50 ml-auto mr-auto" />
             </form>
 
             {/* Separate form for navigating to a friend's profile */}

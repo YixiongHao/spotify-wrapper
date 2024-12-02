@@ -30,7 +30,7 @@ export default function Quirky() {
     }, []);
 
     useEffect(() => {
-        const duo = localStorage.getItem("isDuo");
+        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
         if (duo) {
             setIsDuo(duo === 'true');
         }
@@ -53,8 +53,9 @@ export default function Quirky() {
     }, []);
 
     async function fetchQuirkyDescription(id: string): Promise<void> {
+        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/displayquirky?id=${id}&isDuo=${isDuo}`, {
+            const response = await fetch(`http://localhost:8000/spotify_data/displayquirky?id=${id}&isDuo=${duo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
