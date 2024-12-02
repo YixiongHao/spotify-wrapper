@@ -57,8 +57,9 @@ export default function Tracks() {
     }, []);
 
     async function fetchFavoriteSongs(id: string): Promise<void> {
+        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/displaytracks?id=${id}&isDuo=${isDuo}`, {
+            const response = await fetch(`http://localhost:8000/spotify_data/displaytracks?id=${id}&isDuo=${duo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

@@ -29,9 +29,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from requests import Request, post
-from .utils import update_or_create_user_tokens, is_spotify_authenticated, generate_state, delete_user_data
+from accounts.utils import update_or_create_user_tokens, is_spotify_authenticated, generate_state, delete_user_data
 
-from .forms import LoginForm, RegisterForm
+from accounts.forms import LoginForm, RegisterForm
 
 # Create your views here.
 

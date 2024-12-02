@@ -6,6 +6,7 @@ import Heading1 from '../Components/Heading1';
 export default function History() {
     const [history, setHistory] = useState<{ id: number, isDuo: boolean }[]>([]);
     const [popupMessage, setPopupMessage] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<number | ''>(''); // State for the input box
     const router = useRouter();
 
     async function fetchSummary(): Promise<void> {
@@ -23,7 +24,7 @@ export default function History() {
                     setPopupMessage("No history for this account. Go create a roast!");
                 } else {
                     console.error("Failed to fetch SpotifyUser data");
-                }        
+                }
                 return;
             }
             const data = await response.json();
@@ -47,10 +48,48 @@ export default function History() {
         router.push('/wrapped/title');
     };
 
+    const handleDelete = async (): Promise<void> => {
+        if (deleteId === '') {
+            setPopupMessage("Please enter a valid ID.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8000/spotify_data/delete?deleteId=${deleteId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                setPopupMessage(`Failed to delete item with ID ${deleteId}.`);
+                return;
+            }
+
+            setPopupMessage(`Item with ID ${deleteId} deleted successfully.`);
+            setDeleteId(''); // Clear the input box
+            await fetchSummary(); // Refresh the list
+        } catch (error) {
+            console.error("Error deleting item:", error);
+            setPopupMessage("An error occurred while trying to delete the item.");
+        }
+    };
+
     return (
-        <div className={"flex flex-col justify-center items-center space-y-10 mt-10"}>
+        <>
+            {/* Back Button */}
+            <button
+                onClick={() => router.push('/dashboard')}
+                className="absolute top-4 right-4 px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+            >
+                Back
+            </button>
+
             <Heading1 text="Past Roasts" />
-            <div className="flex flex-wrap gap-2 mt-4 w-3/4">
+            <p>Roast history information</p>
+            <div className="flex flex-wrap gap-2 mt-4">
                 {history.map((item, index) => (
                     <button
                         key={index}
@@ -63,11 +102,26 @@ export default function History() {
                     </button>
                 ))}
             </div>
+            <div className="mt-4">
+                <input
+                    type="number"
+                    value={deleteId}
+                    onChange={(e) => setDeleteId(Number(e.target.value) || '')}
+                    placeholder="Enter ID to delete"
+                    className="px-2 py-1 border rounded mr-2"
+                />
+                <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                    Delete
+                </button>
+            </div>
             {popupMessage && (
                 <div className="mt-4 p-4 bg-red-500 text-white rounded">
                     {popupMessage}
                 </div>
             )}
-        </div>
+        </>
     );
 }

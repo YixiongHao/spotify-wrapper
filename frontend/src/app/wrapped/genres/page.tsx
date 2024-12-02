@@ -47,7 +47,8 @@ export default function Genres() {
 
     async function fetchFavoriteGenres(id: string): Promise<void> {
         try {
-            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/spotify_data/displaygenres?id=${id}&isDuo=${isDuo}`, {
+            const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
+            const response = await fetch(`http://localhost:8000/spotify_data/displaygenres?id=${id}&isDuo=${duo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +70,7 @@ export default function Genres() {
 
     return (
         <div className={"flex flex-col justify-center items-center space-y-2 mt-10"}>
-            <p>top genres: {genres.join(', ')}</p>
+            <p>top genres: {genres}</p>
             <Image
                 src="/images/dumpster.png"
                 alt={"A dumpster with garbage bags around it"}

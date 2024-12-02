@@ -18,41 +18,18 @@ const SpotifyUserPage = () => {
     }, []);
 
     useEffect(() => {
-        // Check the `id` value in localStorage and fetch data if needed
-        const id = localStorage.getItem("id");
-
-        if (id === "-1") {
-            fetchAndDisplaySpotifyUser().catch(console.error);
-        }
+        fetchAndDisplaySpotifyUser().catch(console.error);
     }, []); // Empty dependency array ensures this runs only once on component mount    
 
     const fetchAndDisplaySpotifyUser = async (): Promise<void> => {
         try {
-            // Fetch user data
-            const response = await fetch(`http://localhost:8000/spotify_data/updateuser`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                console.error("Failed to fetch SpotifyUser data");
-                return;
-            }
-
-            let data = await response.json();
-            data = data.spotify_user;
-            console.log(data);
-
             // Fetch Spotify Wrapped data
             const termselection = localStorage.getItem("timeRange") || "1";
             const user1 = localStorage.getItem("user1") || "user1";
             const user2 = localStorage.getItem("user2") || "user2";
             if (localStorage.getItem("isDuo") == '1') {
                 const wrappedResponse = await fetch(
-                    `http://localhost:8000/spotify_data/addduo/?termselection=${encodeURIComponent(termselection)}&user1=${encodeURIComponent(user1)}&user2=${encodeURIComponent(user2)}`,
+                    `http://localhost:8000/spotify_data/addduo/?termselection=${termselection}&user1=${encodeURIComponent(user1)}&user2=${encodeURIComponent(user2)}`,
                     {
                         method: "GET",
                         headers: {
@@ -70,7 +47,7 @@ const SpotifyUserPage = () => {
                 localStorage.setItem("id", wrappedData.id);
             } else {
                 const wrappedResponse = await fetch(
-                    `http://localhost:8000/spotify_data/addwrapped/?termselection=${encodeURIComponent(termselection)}`,
+                    `http://localhost:8000/spotify_data/addwrapped/?termselection=${termselection}`,
                     {
                         method: "GET",
                         headers: {

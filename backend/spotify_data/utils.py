@@ -283,8 +283,14 @@ def str_to_datetime(dtstr):
     Convert string to datetime object.
     """
     strlist = dtstr.split("-")
-    return datetime(strlist[0], strlist[1], strlist[2], strlist[3],
-                    strlist[4], strlist[5], strlist[6])
+    y = int(strlist[0])
+    m = int(strlist[1])
+    d = int(strlist[2])
+    H = int(strlist[3])
+    M = int(strlist[4])
+    S = int(strlist[5])
+    f = int(strlist[6])
+    return datetime(y, m, d, H, M, S, f)
 
 def create_groq_comparison(groq_api_key, artist_1, artist_2):
     """
@@ -304,7 +310,8 @@ def create_groq_comparison(groq_api_key, artist_1, artist_2):
     client = Groq(api_key=groq_api_key)
     description_prompt = (
         f"Compare {artist_1} and {artist_2} in a funny and way that roasts both. "
-        "Highlight their differences in style, fanbase, and anything else that makes them opposites."
+        "Highlight their differences in style, fanbase, and "
+        "anything else that makes them opposites."
     )
 
     try:
@@ -312,8 +319,10 @@ def create_groq_comparison(groq_api_key, artist_1, artist_2):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a music critic who roasts and humorously compares two artists "
-                               "(use 2nd perspective) in less than 100 words. Be witty and sarcastic."
+                    "content": "You are a music critic who roasts and humorously "
+                               "compares two artists "
+                               "(use 2nd perspective) in less than 100 words. "
+                               "Be witty and sarcastic."
                 },
                 {
                     "role": "user",

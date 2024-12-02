@@ -12,8 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from accounts.models import SpotifyToken
 from spotify_data.views import update_or_add_spotify_user, add_spotify_wrapped, add_duo_wrapped
 from spotify_data.models import SpotifyUser, SpotifyWrapped
-
-from backend.spotify_data.views import display_artists, display_songs, display_genres
+from spotify_data.views import display_artists, display_genres
 
 
 def mock_getenv_side_effect(key):
@@ -281,6 +280,7 @@ def test_add_spotify_wrapped_short_term(mock_create_wrapped,
     # Verify the creation call
     mock_create_wrapped.assert_called_once_with(
         user="test_user",
+        term_selection='0',
         favorite_artists=["artist1", "artist2"],
         favorite_tracks=["track1", "track2"],
         favorite_genres=["genre1", "genre2"],
@@ -361,6 +361,7 @@ def test_add_spotify_wrapped_medium_term(mock_create_wrapped,
     # Verify the creation call
     mock_create_wrapped.assert_called_once_with(
         user="test_user",
+        term_selection='1',
         favorite_artists=["artist1", "artist2"],
         favorite_tracks=["track1", "track2"],
         favorite_genres=["genre1", "genre2"],
@@ -443,6 +444,7 @@ def test_add_spotify_wrapped_long_term(mock_create_wrapped,
     # Verify the creation call
     mock_create_wrapped.assert_called_once_with(
         user="test_user",
+        term_selection='2',
         favorite_artists=["artist1", "artist2"],
         favorite_tracks=["track1", "track2"],
         favorite_genres=["genre1", "genre2"],
@@ -525,34 +527,96 @@ def test_add_duo_wrapped_user_not_found(mock_create, mock_get, mock_request, moc
 
 @pytest.mark.django_db
 @patch("spotify_data.models.DuoWrapped.objects.filter")
-def test_display_artists_duo(mock_filter, mock_request):
+@patch("spotify_data.views.create_groq_description")
+@patch("spotify_data.views.create_groq_comparison")
+def test_display_artists_duo(mock_comparison, mock_description, mock_filter, mock_request):
     """
     Test display_artists with DuoWrapped data.
     """
     mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
     mock_filter.return_value.values.return_value = [{"favorite_artists": [{"name": "Artist 1", "images": [{"url": "http://example.com/img.jpg"}]}]}]
+    mock_description.return_value = "Generated description"
+    mock_comparison.return_value = "Generated description"
 
     response = display_artists(mock_request)
     assert response.status_code == 200
-    assert response.json()[0]["name"] == "Artist 1"
+    assert json.loads(response.content)[0]["name"] == "Artist 1"
+
+from unittest.mock import Mock, patch
+import pytest
+from django.http import JsonResponse
+import json
+
+from unittest.mock import Mock, patch
+import pytest
+from django.http import JsonResponse
+import json
 
 @pytest.mark.django_db
+@patch("spotify_data.views.DuoWrappedSerializer")
 @patch("spotify_data.models.DuoWrapped.objects.create")
 @patch("spotify_data.models.SpotifyUser.objects.get")
 @patch("spotify_data.views.create_groq_description")
-def test_add_duo_wrapped_success(mock_create_description, mock_get_user, mock_create_duo, mock_request):
+def test_add_duo_wrapped_success(
+    mock_create_description, mock_get_user, mock_create_duo_wrapped, mock_serializer, mock_request
+):
     """
     Test successful creation of DuoWrapped data.
     """
+    # Mock request parameters
     mock_request.GET.get.side_effect = lambda key: {"user1": "user1", "user2": "user2", "termselection": "0"}.get(key)
-    mock_get_user.side_effect = [Mock(favorite_artists_short=["artist1"]), Mock(favorite_artists_short=["artist2"])]
-    mock_create_description.return_value = "Generated description"
-    mock_create_duo.return_value = Mock()
 
+    # Mock SpotifyUser objects
+    mock_user1 = Mock(
+        display_name="user1",
+        favorite_artists_short=["artist1"],
+        favorite_tracks_short=["track1"],
+        favorite_genres_short=["genre1", "genre2"],
+        quirkiest_artists_short=["quirky_artist1"],
+        past_roasts=[],
+    )
+    mock_user2 = Mock(
+        display_name="user2",
+        favorite_artists_short=["artist2"],
+        favorite_tracks_short=["track2"],
+        favorite_genres_short=["genre2"],
+        quirkiest_artists_short=["quirky_artist2"],
+        past_roasts=[],
+    )
+    mock_get_user.side_effect = [mock_user1, mock_user2]
+
+    # Mock create_groq_description
+    mock_create_description.return_value = "Generated description"
+
+    # Mock DuoWrapped.objects.create
+    mock_wrapped_instance = Mock()
+    mock_create_duo_wrapped.return_value = mock_wrapped_instance
+
+    # Mock DuoWrappedSerializer
+    mock_serializer.return_value.data = {
+        "id": 1,
+        "user": "user1",
+        "user2": "user2",
+        "term_selection": "0",
+        "favorite_artists": ["artist1", "artist2"],
+        "favorite_tracks": ["track1", "track2"],
+        "quirkiest_artists": ["quirky_artist1", "quirky_artist2"],
+        "favorite_genres": ["genre1", "genre2"],
+        "llama_description": "Generated description",
+        "llama_songrecs": "none",
+    }
+
+    # Call the function
     response = add_duo_wrapped(mock_request)
+
+    # Assertions
     assert isinstance(response, JsonResponse)
     assert response.status_code == 200
-    assert "duo_wrapped" in response.json()
+    data = json.loads(response.content)
+    assert "duo_wrapped" in data
+    assert data["duo_wrapped"]["favorite_artists"] == ["artist1", "artist2"]
+    assert data["duo_wrapped"]["llama_description"] == "Generated description"
+
 
 
 @pytest.mark.django_db
@@ -571,18 +635,32 @@ def test_add_duo_wrapped_user2_not_found(mock_get_user, mock_request):
 
 
 @pytest.mark.django_db
-@patch("spotify_data.models.DuoWrapped.objects.get")
-def test_display_genres_duo_success(mock_get_duo, mock_request):
+@patch("spotify_data.views.create_groq_description")
+@patch("spotify_data.models.DuoWrapped.objects.filter")
+def test_display_genres_duo_success(mock_duo_filter, mock_groq_description, mock_request):
     """
     Test display_genres with DuoWrapped data.
     """
+    # Simulate query parameters in the request
     mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "true"}.get(key)
-    mock_get_duo.return_value = Mock(favorite_genres=["Genre 1", "Genre 2"])
+
+    # Mock the database query result
+    mock_duo_filter.return_value.values.return_value = [
+        {"id": "1", "favorite_genres": ["Genre 1", "Genre 2"]}
+    ]
+
+    # Mock the create_groq_description function return value
+    mock_groq_description.return_value = "Generated description"
+
+    # Call the view function
     response = display_genres(mock_request)
+
+    # Validate the response
     assert response.status_code == 200
-    data = response.json()
+    data = json.loads(response.content)
     assert data["genres"] == "Genre 1, Genre 2"
     assert "desc" in data
+    assert data["desc"] == "Generated description"
 
 
 @pytest.mark.django_db
@@ -605,7 +683,6 @@ def test_display_genres_single_no_data(mock_filter, mock_request):
     Test display_genres with SpotifyWrapped data when no data is found.
     """
     mock_request.GET.get.side_effect = lambda key: {"id": "1", "isDuo": "false"}.get(key)
-    mock_filter.return_value.values.side_effect = ObjectDoesNotExist
     response = display_genres(mock_request)
     assert response.status_code == 500
     assert response.content == b"Wrapped grab failed: no data"

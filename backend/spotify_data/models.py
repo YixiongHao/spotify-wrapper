@@ -4,7 +4,7 @@ Models for Spotify Roasted database.
 from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
-from .utils import datetime_to_str
+from spotify_data.utils import datetime_to_str
 
 class Song(models.Model):
     """
@@ -75,7 +75,7 @@ class WrapBase(models.Model):
     quirkiest_artists = models.JSONField(default=list, blank=True, null=True)
     llama_description = models.TextField(blank=True, null=True)
     llama_songrecs = models.TextField(blank=True, null=True)
-    datetime_created = models.CharField(default=datetime_to_str(datetime.now()), max_length=50)
+    datetime_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         '''Meta'''

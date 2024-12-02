@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "spotify_data",
+    "spotify_data.apps.SpotifyDataConfig",
     "accounts.apps.AccountsConfig",
     "corsheaders",
 ]
@@ -114,6 +114,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+        "OPTIONS": {"timeout": 300},
     }
 }
 
