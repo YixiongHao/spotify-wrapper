@@ -4,18 +4,31 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function Genres() {
-    const [genres, setGenres] = useState<string[]>([]); // Assuming genres is a string array
-    const [desc, setDesc] = useState<string>(""); // Description is likely a string
+    const [genres, setGenres] = useState<string[]>([]);
+    const [desc, setDesc] = useState<string>("");
     const [id, setId] = useState<string | null>(null);
     const [isDuo, setIsDuo] = useState<boolean | null>(null);
+    const [timeRange, setTimeRange] = useState<number>(2);
+    // Add state for window dimensions
+    const [dimensions, setDimensions] = useState({ width: 300, height: 300 }); // Default values
 
     const router = useRouter();
 
+    // Combine localStorage access into one useEffect
     useEffect(() => {
         const storedId = localStorage.getItem("id");
-        if (storedId) {
-            setId(storedId);
-        }
+        const duo = localStorage.getItem("isDuo");
+        const storedTimeRange = localStorage.getItem("timeRange");
+
+        if (storedId) setId(storedId);
+        if (duo) setIsDuo(duo === 'true');
+        if (storedTimeRange) setTimeRange(parseInt(storedTimeRange, 10));
+
+        // Set window dimensions
+        setDimensions({
+            width: window.screen.width/3,
+            height: window.screen.height/3
+        });
     }, []);
 
     useEffect(() => {
@@ -23,39 +36,18 @@ export default function Genres() {
             router.push('/wrapped/tracks/');
         };
         document.addEventListener('click', handleClick);
-
-        return () => {
-            document.removeEventListener('click', handleClick);
-        };
+        return () => document.removeEventListener('click', handleClick);
     }, [router]);
 
     useEffect(() => {
-        const storedTimeRange = localStorage.getItem("timeRange");
-        if (storedTimeRange) {
-            setTimeRange(parseInt(storedTimeRange, 10));
-        }
-    }, []);
-
-    const [timeRange, setTimeRange] = useState<number>(2);
-
-    useEffect(() => {
-        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
-        if (duo) {
-            setIsDuo(duo === 'true');
-        }
-    }, []);
-
-    useEffect(() => {
-        const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
-        if (id && duo !== null) {
+        if (id && isDuo !== null) {
             fetchFavoriteGenres(id).catch(console.error);
         }
-    }, [id]);
+    }, [id, isDuo]);
 
     async function fetchFavoriteGenres(id: string): Promise<void> {
         try {
-            const duo = localStorage.getItem("isDuo") == '1' ? 'true' : 'false';
-            const response = await fetch(`http://localhost:8000/spotify_data/displaygenres?id=${id}&isDuo=${duo}`, {
+            const response = await fetch(`https://spotify-wrapped-backend.vercel.app/spotify_data/displaygenres?id=${id}&isDuo=${isDuo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -68,11 +60,8 @@ export default function Genres() {
                 return;
             }
             const data = await response.json();
-            console.log('everything went alright');
-            console.log(data);
-
-            setGenres(data.genres || []); // Ensure genres is always an array
-            setDesc(data.desc || ""); // Default to empty string if no desc
+            setGenres(data.genres || []);
+            setDesc(data.desc || "");
         } catch (error) {
             console.error("Error fetching SpotifyUser data:", error);
         }
@@ -80,12 +69,12 @@ export default function Genres() {
 
     return (
         <div className={"flex flex-col justify-center items-center space-y-2 mt-10"}>
-            <p>top genres: {genres}</p>
+            <p>top genres: {genres.join(', ')}</p>
             <Image
                 src="/images/dumpster.png"
                 alt={"A dumpster with garbage bags around it"}
-                width={window.screen.width/3}
-                height={window.screen.height/3}
+                width={dimensions.width}
+                height={dimensions.height}
                 className={""}
             />
             <p className={"w-3/4"}>{desc}</p>
