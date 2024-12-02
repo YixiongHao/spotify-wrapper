@@ -232,8 +232,6 @@ def add_duo_wrapped(request):
     spotify_user1.save(update_fields=['past_roasts'])
     spotify_user2.past_roasts.append(wrapped_data)
     spotify_user2.save(update_fields=['past_roasts'])
-
-    print(wrapped.id)
     return JsonResponse({'duo_wrapped': wrapped_data})
 
 def display_artists(request):
@@ -459,3 +457,17 @@ def check_username_exists(request):
         return JsonResponse({'exists': True}, status=200)
     except ObjectDoesNotExist:
         return JsonResponse({'exists': False}, status=200)
+
+def delete(request):
+    """
+    delete wrapped with corresponding id.
+    """
+    delete_id = int(request.GET.get('deleteId'))
+    spotify_user = SpotifyUser.objects.get(display_name=request.user.username)
+    delete_wrapped = None
+    for wrapped in spotify_user.past_roasts:
+        if wrapped['id'] == delete_id:
+            delete_wrapped = wrapped
+    spotify_user.past_roasts.remove(delete_wrapped)
+    spotify_user.save(update_fields=['past_roasts'])
+    return JsonResponse({'deleted': True}, status=200)
