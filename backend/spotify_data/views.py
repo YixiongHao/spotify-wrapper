@@ -10,13 +10,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse
 from accounts.models import SpotifyToken  # Local imports
-from .utils import (get_spotify_user_data, get_user_favorite_artists,
+from spotify_data.utils import (get_spotify_user_data, get_user_favorite_artists,
                     get_user_favorite_tracks,
                     get_top_genres, get_quirkiest_artists,
                     create_groq_description,
                     create_groq_quirky, create_groq_comparison)
-from .models import Song, SpotifyUser, SpotifyWrapped, DuoWrapped
-from .serializers import (SongSerializer, SpotifyUserSerializer,
+from spotify_data.models import Song, SpotifyUser, SpotifyWrapped, DuoWrapped
+from spotify_data.serializers import (SongSerializer, SpotifyUserSerializer,
                           DuoWrappedSerializer, SpotifyWrappedSerializer)
 
 # pylint: disable=too-many-ancestors
@@ -287,16 +287,13 @@ def display_genres(request):
     is_duo = request.GET.get('isDuo')
 
     if is_duo == 'true':
-        try:
-            wrapped_data = DuoWrapped.objects.filter(id=id).values() # pylint: disable=no-member
-        except ObjectDoesNotExist:
-            return HttpResponse("Wrapped grab failed: no data", status=500)
+        wrapped_data = DuoWrapped.objects.filter(id=id).values() # pylint: disable=no-member
     else:
-        try:
-            wrapped_data = SpotifyWrapped.objects.filter(id=id).values() # pylint: disable=no-member
-        except ObjectDoesNotExist:
-            return HttpResponse("Wrapped grab failed: no data", status=500)
-    wrapped_data = list(wrapped_data)[0]
+        wrapped_data = SpotifyWrapped.objects.filter(id=id).values() # pylint: disable=no-member
+    try:
+        wrapped_data = list(wrapped_data)[0]
+    except IndexError:
+        return HttpResponse("Wrapped grab failed: no data", status=500)
     genres = wrapped_data['favorite_genres'][:5]
 
     out = {

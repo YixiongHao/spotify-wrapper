@@ -283,8 +283,14 @@ def str_to_datetime(dtstr):
     Convert string to datetime object.
     """
     strlist = dtstr.split("-")
-    return datetime(strlist[0], strlist[1], strlist[2], strlist[3],
-                    strlist[4], strlist[5], strlist[6])
+    y = int(strlist[0])
+    m = int(strlist[1])
+    d = int(strlist[2])
+    H = int(strlist[3])
+    M = int(strlist[4])
+    S = int(strlist[5])
+    f = int(strlist[6])
+    return datetime(y, m, d, H, M, S, f)
 
 def create_groq_comparison(groq_api_key, artist_1, artist_2):
     """

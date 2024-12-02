@@ -5,8 +5,8 @@ from unittest.mock import patch, Mock, MagicMock
 from datetime import datetime
 import pytest
 from groq import GroqError
-from ..utils import (get_spotify_user_data, get_user_favorite_artists, get_user_favorite_tracks,
-                     get_top_genres, get_quirkiest_artists, interlock, str_to_datetime,
+from spotify_data.utils import (get_spotify_user_data, get_user_favorite_artists, get_user_favorite_tracks,
+                     get_top_genres, get_quirkiest_artists, str_to_datetime,
                      get_spotify_recommendations, create_groq_description)
 
 
@@ -235,11 +235,3 @@ def test_create_groq_description_varied_artist_list(favorite_artists):
 def test_str_to_datetime():
     teststr = '2024-01-02-03-04-05-000006'
     assert str_to_datetime(teststr) == datetime(2024, 1, 2, 3, 4, 5, 6)
-
-
-def test_interlock():
-    arr1 = [1, 3, 5]
-    arr2 = [2, 4]
-    assert interlock(arr1, arr2) == [1, 2, 3, 4, 5]
-    arr3 = [1, 3]
-    assert interlock(arr3, arr2) == [1, 2, 3, 4]
