@@ -55,8 +55,8 @@ export default function History() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/spotify_data/delete?deleteId=${deleteId}`, {
-                method: 'GET',
+            const response = await fetch(`http://localhost:8000/spotify_data/delete/${deleteId}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -78,9 +78,18 @@ export default function History() {
     };
 
     return (
-        <div className={"flex flex-col justify-center items-center space-y-10 mt-10"}>
+        <>
+            {/* Back Button */}
+            <button
+                onClick={() => router.push('/dashboard')}
+                className="absolute top-4 right-4 px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+            >
+                Back
+            </button>
+
             <Heading1 text="Past Roasts" />
-            <div className="flex flex-wrap gap-2 mt-4 w-3/4">
+            <p>Roast history information</p>
+            <div className="flex flex-wrap gap-2 mt-4">
                 {history.map((item, index) => (
                     <button
                         key={index}
@@ -113,6 +122,6 @@ export default function History() {
                     {popupMessage}
                 </div>
             )}
-        </div>
+        </>
     );
 }

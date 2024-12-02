@@ -178,9 +178,9 @@ def add_duo_wrapped(request):
     def alternate_lists(list1, list2, count1, count2):
         combined = []
         for i in range(max(count1, count2)):
-            if i < count1:
+            if i < count1 and i < len(list1):
                 combined.append(list1[i])
-            if i < count2:
+            if i < count2 and i <len(list2):
                 combined.append(list2[i])
         return combined
 
@@ -285,7 +285,7 @@ def display_genres(request):
 
     if is_duo == 'true':
         try:
-            wrapped_data = DuoWrapped.objects.get(id=id)
+            wrapped_data = DuoWrapped.objects.filter(id=id).values()
         except ObjectDoesNotExist:
             return HttpResponse("Wrapped grab failed: no data", status=500)
     else:
@@ -453,7 +453,7 @@ def check_username_exists(request):
 
     try:
         # Query the database for the username
-        SpotifyUser.objects.filter(display_name=username)
+        SpotifyUser.objects.get(display_name=username)
         return JsonResponse({'exists': True}, status=200)
     except ObjectDoesNotExist:
         return JsonResponse({'exists': False}, status=200)
